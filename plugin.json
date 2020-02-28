@@ -7,15 +7,15 @@
   "author": "Xenakios",
   "authorEmail": "xenakios@gmail.com",
   "authorUrl": "https://xenakios.wordpress.com/",
-  "pluginUrl": "",
+  "pluginUrl": "https://xenakios.wordpress.com/",
   "manualUrl": "",
-  "sourceUrl": "",
+  "sourceUrl": "https://github.com/Xenakios/Poly_AudibleInstruments",
   "donateUrl": "",
   "modules": [
     
     {
       "slug": "PolyPlaits",
-      "name": "Macro Oscillator 2",
+      "name": "Macro PolyOscillator 2",
       "description": "Based on Mutable Instruments Plaits",
       "tags": [
         "Oscillator",
