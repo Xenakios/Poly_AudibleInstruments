@@ -193,10 +193,16 @@ struct Plaits : Module {
 				modulations[i].note = inputs[NOTE_INPUT].getVoltage(i) * 12.f;
 				modulations[i].frequency = inputs[FREQ_INPUT].getVoltage() * 6.f;
 				modulations[i].harmonics = inputs[HARMONICS_INPUT].getVoltage() / 5.f;
-				modulations[i].timbre = inputs[TIMBRE_INPUT].getVoltage() / 8.f;
+				if (inputs[TIMBRE_INPUT].getChannels()<2)
+					modulations[i].timbre = inputs[TIMBRE_INPUT].getVoltage() / 8.f;
+				else
+					modulations[i].timbre = inputs[TIMBRE_INPUT].getVoltage(i) / 8.f;
 				modulations[i].morph = inputs[MORPH_INPUT].getVoltage() / 8.f;
 				// Triggers at around 0.7 V
-				modulations[i].trigger = inputs[TRIGGER_INPUT].getVoltage() / 3.f;
+				if (inputs[TRIGGER_INPUT].getChannels()<2)
+					modulations[i].trigger = inputs[TRIGGER_INPUT].getVoltage() / 3.f;
+				else
+					modulations[i].trigger = inputs[TRIGGER_INPUT].getVoltage(i) / 3.f;
 				modulations[i].level = inputs[LEVEL_INPUT].getVoltage() / 8.f;
 
 				modulations[i].frequency_patched = inputs[FREQ_INPUT].isConnected();
