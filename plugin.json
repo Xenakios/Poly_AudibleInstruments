@@ -1,0 +1,29 @@
+{
+  "slug": "PolyAudibleInstruments",
+  "name": "Xenakios",
+  "version": "1.0.0",
+  "license": "GPL-3.0-only",
+  "brand": "Xenakios",
+  "author": "Xenakios",
+  "authorEmail": "xenakios@gmail.com",
+  "authorUrl": "https://xenakios.wordpress.com/",
+  "pluginUrl": "",
+  "manualUrl": "",
+  "sourceUrl": "",
+  "donateUrl": "",
+  "modules": [
+    
+    {
+      "slug": "PolyPlaits",
+      "name": "Macro Oscillator 2",
+      "description": "Based on Mutable Instruments Plaits",
+      "tags": [
+        "Oscillator",
+        "Hardware",
+        "Polyphonic"
+      ]
+    }
+
+
+  ]
+}
