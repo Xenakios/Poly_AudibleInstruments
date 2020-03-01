@@ -191,7 +191,10 @@ struct Plaits : Module {
 				patch[i].timbre_modulation_amount = params[TIMBRE_CV_PARAM].getValue();
 				patch[i].morph_modulation_amount = params[MORPH_CV_PARAM].getValue();
 				// Update modulations
-				modulations[i].engine = inputs[ENGINE_INPUT].getVoltage() / 5.f;
+				if (inputs[ENGINE_INPUT].getChannels() < 2)
+					modulations[i].engine = inputs[ENGINE_INPUT].getVoltage() / 5.f;
+				else 
+					modulations[i].engine = inputs[ENGINE_INPUT].getVoltage(i) / 5.f;
 				modulations[i].note = inputs[NOTE_INPUT].getVoltage(i) * 12.f;
 				modulations[i].frequency = inputs[FREQ_INPUT].getVoltage() * 6.f;
 				if (inputs[HARMONICS_INPUT].getChannels() < 2)
