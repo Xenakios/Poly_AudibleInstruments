@@ -89,7 +89,7 @@ struct Plaits : Module {
 			patch[i].lpg_colour = 0.5f;
 			patch[i].decay = 0.5f;
 		}
-		
+
 	}
 
 	void onRandomize() override {
@@ -197,13 +197,13 @@ struct Plaits : Module {
 				// Update modulations
 				if (inputs[ENGINE_INPUT].getChannels() < 2)
 					modulations[i].engine = inputs[ENGINE_INPUT].getVoltage() / 5.f;
-				else 
+				else
 					modulations[i].engine = inputs[ENGINE_INPUT].getVoltage(i) / 5.f;
 				modulations[i].note = inputs[NOTE_INPUT].getVoltage(i) * 12.f;
 				modulations[i].frequency = inputs[FREQ_INPUT].getVoltage() * 6.f;
 				if (inputs[HARMONICS_INPUT].getChannels() < 2)
 					modulations[i].harmonics = inputs[HARMONICS_INPUT].getVoltage() / 5.f;
-				else 
+				else
 					modulations[i].harmonics = inputs[HARMONICS_INPUT].getVoltage(i) / 5.f;
 				if (inputs[TIMBRE_INPUT].getChannels() < 2)
 					modulations[i].timbre = inputs[TIMBRE_INPUT].getVoltage() / 8.f;
@@ -229,7 +229,7 @@ struct Plaits : Module {
 				modulations[i].trigger_patched = inputs[TRIGGER_INPUT].isConnected();
 				modulations[i].level_patched = inputs[LEVEL_INPUT].isConnected();
 			}
-			
+
 
 			// Render frames
 			for (int polych=0;polych<numpolychs;++polych)
@@ -315,10 +315,10 @@ struct PlaitsWidget : ModuleWidget {
 		addParam(createParam<Trimpot>(mm2px(Vec(27.2245, 77.60705)), module, Plaits::FREQ_CV_PARAM));
 		addParam(createParam<Trimpot>(mm2px(Vec(46.56189, 77.60705)), module, Plaits::MORPH_CV_PARAM));
 		// 64, 100
-		addParam(createParam<Rogan1PSWhite>(mm2px(Vec(64.0, 40.0)), module, Plaits::LPG_PARAM1));
-		addInput(createInput<PJ301MPort>(mm2px(Vec(64.0, 55)), module, Plaits::LPG_PAR1_INPUT));
-		addParam(createParam<Rogan1PSWhite>(mm2px(Vec(64.0, 15.0)), module, Plaits::LPG_PARAM2));
-		addInput(createInput<PJ301MPort>(mm2px(Vec(64.0, 30)), module, Plaits::LPG_PAR2_INPUT));
+		addParam(createParam<Trimpot>(mm2px(Vec(17.55581, 70.33605)), module, Plaits::LPG_PARAM1));
+		addInput(createInput<PJ301MPort>(mm2px(Vec(16.52731, 80.84152)), module, Plaits::LPG_PAR1_INPUT));
+		addParam(createParam<Trimpot>(mm2px(Vec(36.893195, 70.33605)), module, Plaits::LPG_PARAM2));
+		addInput(createInput<PJ301MPort>(mm2px(Vec(35.864695, 80.84152)), module, Plaits::LPG_PAR2_INPUT));
 
 		addInput(createInput<PJ301MPort>(mm2px(Vec(3.31381, 92.48067)), module, Plaits::ENGINE_INPUT));
 		addInput(createInput<PJ301MPort>(mm2px(Vec(14.75983, 92.48067)), module, Plaits::TIMBRE_INPUT));
