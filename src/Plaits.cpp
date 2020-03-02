@@ -128,9 +128,7 @@ struct Plaits : Module {
 	}
 
 	void process(const ProcessArgs &args) override {
-		int numpolychs = inputs[NOTE_INPUT].getChannels();
-		if (numpolychs==0)
-			numpolychs = 1;
+		int numpolychs = std::max(inputs[NOTE_INPUT].getChannels(),1);
 		if (outputBuffer[0].empty()) {
 			const int blockSize = 12;
 

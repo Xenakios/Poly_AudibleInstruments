@@ -71,9 +71,7 @@ struct Braids : Module {
 
 	void process(const ProcessArgs &args) override {
 		// Trigger
-		int polychs = inputs[PITCH_INPUT].getChannels();
-		if (polychs == 0)
-			polychs = 1;
+		int polychs = std::max(inputs[PITCH_INPUT].getChannels(),1);
 		for (int i=0;i<polychs;++i)
 		{
 			bool trig = inputs[TRIG_INPUT].getVoltage(i) >= 1.0;
