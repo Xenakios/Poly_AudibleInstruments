@@ -20,6 +20,8 @@ struct Plaits : Module {
 		TIMBRE_CV_PARAM,
 		FREQ_CV_PARAM,
 		MORPH_CV_PARAM,
+		LPG_PARAM1,
+		LPG_PARAM2,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -31,6 +33,8 @@ struct Plaits : Module {
 		TRIGGER_INPUT,
 		LEVEL_INPUT,
 		NOTE_INPUT,
+		LPG_PAR1_INPUT,
+		LPG_PAR2_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -68,15 +72,13 @@ struct Plaits : Module {
 		configParam(TIMBRE_CV_PARAM, -1.0, 1.0, 0.0, "Timbre CV");
 		configParam(FREQ_CV_PARAM, -1.0, 1.0, 0.0, "Frequency CV");
 		configParam(MORPH_CV_PARAM, -1.0, 1.0, 0.0, "Morph CV");
-
+		configParam(LPG_PARAM1, 0.0, 1.0, 0.5, "LPG Colour");
+		configParam(LPG_PARAM2, 0.0, 1.0, 0.5, "LPG Decay");
 		for (int i=0;i<MAX_PLAITS_VOICES;++i)
 		{
 			stmlib::BufferAllocator allocator(shared_buffer[i], sizeof(shared_buffer[i]));
 			voice[i].Init(&allocator);
 		}
-
-		
-
 		onReset();
 	}
 
@@ -177,14 +179,18 @@ struct Plaits : Module {
 			{
 				patch[i].note = 60.f + pitch * 12.f;
 				patch[i].harmonics = params[HARMONICS_PARAM].getValue();
-				if (!lpg) {
+				//if (!lpg) {
 					patch[i].timbre = params[TIMBRE_PARAM].getValue();
 					patch[i].morph = params[MORPH_PARAM].getValue();
-				}
-				else {
-					patch[i].lpg_colour = params[TIMBRE_PARAM].getValue();
-					patch[i].decay = params[MORPH_PARAM].getValue();
-				}
+				//}
+				//else {
+					float lpg_colour = params[LPG_PARAM1].getValue();
+					lpg_colour += inputs[LPG_PAR1_INPUT].getVoltage()/10.0f;
+					patch[i].lpg_colour = clamp(lpg_colour,0.0f,1.0f);
+					float decay = params[LPG_PARAM2].getValue();
+					decay += inputs[LPG_PAR2_INPUT].getVoltage()/10.0f;
+					patch[i].decay = clamp(decay,0.0f,1.0);
+				//}
 				patch[i].frequency_modulation_amount = params[FREQ_CV_PARAM].getValue();
 				patch[i].timbre_modulation_amount = params[TIMBRE_CV_PARAM].getValue();
 				patch[i].morph_modulation_amount = params[MORPH_CV_PARAM].getValue();
@@ -308,6 +314,11 @@ struct PlaitsWidget : ModuleWidget {
 		addParam(createParam<Trimpot>(mm2px(Vec(7.88712, 77.60705)), module, Plaits::TIMBRE_CV_PARAM));
 		addParam(createParam<Trimpot>(mm2px(Vec(27.2245, 77.60705)), module, Plaits::FREQ_CV_PARAM));
 		addParam(createParam<Trimpot>(mm2px(Vec(46.56189, 77.60705)), module, Plaits::MORPH_CV_PARAM));
+		// 64, 100
+		addParam(createParam<Rogan1PSWhite>(mm2px(Vec(64.0, 40.0)), module, Plaits::LPG_PARAM1));
+		addInput(createInput<PJ301MPort>(mm2px(Vec(64.0, 55)), module, Plaits::LPG_PAR1_INPUT));
+		addParam(createParam<Rogan1PSWhite>(mm2px(Vec(64.0, 15.0)), module, Plaits::LPG_PARAM2));
+		addInput(createInput<PJ301MPort>(mm2px(Vec(64.0, 30)), module, Plaits::LPG_PAR2_INPUT));
 
 		addInput(createInput<PJ301MPort>(mm2px(Vec(3.31381, 92.48067)), module, Plaits::ENGINE_INPUT));
 		addInput(createInput<PJ301MPort>(mm2px(Vec(14.75983, 92.48067)), module, Plaits::TIMBRE_INPUT));
