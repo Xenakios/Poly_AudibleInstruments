@@ -22,16 +22,6 @@
         "Hardware",
         "Polyphonic"
       ]
-    },
-    {
-      "slug": "PolyBraids",
-      "name": "Macro PolyOscillator 1",
-      "description": "Based on Mutable Instruments Braids",
-      "tags": [
-        "Oscillator",
-        "Hardware",
-        "Polyphonic"
-      ]
     }
 
 
