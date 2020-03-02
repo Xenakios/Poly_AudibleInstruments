@@ -372,10 +372,6 @@ struct PlaitsWidget : ModuleWidget {
 		PlaitsLowCpuItem *lowCpuItem = createMenuItem<PlaitsLowCpuItem>("Low CPU", CHECKMARK(module->lowCpu));
 		lowCpuItem->module = module;
 		menu->addChild(lowCpuItem);
-		PlaitsLPGItem *lpgItem = createMenuItem<PlaitsLPGItem>("Edit LPG response/decay", CHECKMARK(module->lpg));
-		lpgItem->module = module;
-		menu->addChild(lpgItem);
-
 		menu->addChild(new MenuEntry());
 		menu->addChild(createMenuLabel("Models"));
 		for (int i = 0; i < 16; i++) {
