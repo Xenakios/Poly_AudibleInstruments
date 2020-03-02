@@ -21,6 +21,11 @@ SOURCES += $(wildcard eurorack/plaits/dsp/*.cc)
 SOURCES += $(wildcard eurorack/plaits/dsp/engine/*.cc)
 SOURCES += $(wildcard eurorack/plaits/dsp/speech/*.cc)
 SOURCES += $(wildcard eurorack/plaits/dsp/physical_modelling/*.cc)
+SOURCES += eurorack/braids/analog_oscillator.cc
+SOURCES += eurorack/braids/digital_oscillator.cc
+SOURCES += eurorack/braids/resources.cc
+SOURCES += eurorack/braids/macro_oscillator.cc
+SOURCES += eurorack/braids/quantizer.cc
 SOURCES += eurorack/plaits/resources.cc
 
 
