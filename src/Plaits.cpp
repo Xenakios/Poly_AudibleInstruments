@@ -185,10 +185,14 @@ struct Plaits : Module {
 				//}
 				//else {
 					float lpg_colour = params[LPG_PARAM1].getValue();
-					lpg_colour += inputs[LPG_PAR1_INPUT].getVoltage()/10.0f;
+					if (inputs[LPG_PAR1_INPUT].getChannels() < 2)
+						lpg_colour += inputs[LPG_PAR1_INPUT].getVoltage()/10.0f;
+					else lpg_colour += inputs[LPG_PAR1_INPUT].getVoltage(i)/10.0f;
 					patch[i].lpg_colour = clamp(lpg_colour,0.0f,1.0f);
 					float decay = params[LPG_PARAM2].getValue();
-					decay += inputs[LPG_PAR2_INPUT].getVoltage()/10.0f;
+					if (inputs[LPG_PAR2_INPUT].getChannels() < 2)
+						decay += inputs[LPG_PAR2_INPUT].getVoltage()/10.0f;
+					else decay += inputs[LPG_PAR2_INPUT].getVoltage(i)/10.0f;
 					patch[i].decay = clamp(decay,0.0f,1.0);
 				//}
 				patch[i].frequency_modulation_amount = params[FREQ_CV_PARAM].getValue();
