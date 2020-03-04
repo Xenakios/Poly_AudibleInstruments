@@ -324,6 +324,20 @@ struct BraidsLowCpuItem : MenuItem {
 	}
 };
 
+struct BraidsModelItem : MenuItem
+{
+	int modelNumber = 0;
+	Braids *braids = nullptr;
+	BraidsModelItem(int model, Braids* b) : modelNumber(model), braids(b) {}
+	void onAction(const event::Action &e) override {
+		for (int i=0;i<MAX_BRAIDS_VOICES;++i)
+			braids->params[Braids::SHAPE_PARAM].setValue(1.0f/47*modelNumber);
+	}
+	void step() override {
+		rightText = (braids->params[Braids::SHAPE_PARAM].getValue() == 1.0f/47*modelNumber ) ? "✔" : "";
+		MenuItem::step();
+	}
+};
 
 struct BraidsWidget : ModuleWidget {
 	BraidsWidget(Braids *module) {
@@ -371,6 +385,14 @@ struct BraidsWidget : ModuleWidget {
 		menu->addChild(construct<BraidsSettingItem>(&MenuItem::text, "DRFT", &BraidsSettingItem::setting, &braids->settings[0].vco_drift, &BraidsSettingItem::onValue, 4));
 		menu->addChild(construct<BraidsSettingItem>(&MenuItem::text, "SIGN", &BraidsSettingItem::setting, &braids->settings[0].signature, &BraidsSettingItem::onValue, 4));
 		menu->addChild(construct<BraidsLowCpuItem>(&MenuItem::text, "Low CPU", &BraidsLowCpuItem::braids, braids));
+		/*
+		for (int i=0;i<48;++i)
+		{
+			BraidsModelItem* item = new BraidsModelItem(i,braids);
+			item->text = std::string(algo_values[i]);
+			menu->addChild(item);
+		}
+		*/
 	}
 };
 
