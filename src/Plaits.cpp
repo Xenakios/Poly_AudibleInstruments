@@ -20,8 +20,11 @@ struct Plaits : Module {
 		TIMBRE_CV_PARAM,
 		FREQ_CV_PARAM,
 		MORPH_CV_PARAM,
-		LPG_PARAM1,
-		LPG_PARAM2,
+		LPG_COLOR_PARAM,
+		LPG_DECAY_PARAM,
+		LPG_TIMBRE_PARAM,
+		LPG_FM_PARAM,
+		LPG_MORPH_PARAM,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -33,8 +36,8 @@ struct Plaits : Module {
 		TRIGGER_INPUT,
 		LEVEL_INPUT,
 		NOTE_INPUT,
-		LPG_PAR1_INPUT,
-		LPG_PAR2_INPUT,
+		LPG_COLOR_INPUT,
+		LPG_DECAY_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -72,8 +75,11 @@ struct Plaits : Module {
 		configParam(TIMBRE_CV_PARAM, -1.0, 1.0, 0.0, "Timbre CV");
 		configParam(FREQ_CV_PARAM, -1.0, 1.0, 0.0, "Frequency CV");
 		configParam(MORPH_CV_PARAM, -1.0, 1.0, 0.0, "Morph CV");
-		configParam(LPG_PARAM1, 0.0, 1.0, 0.5, "LPG Colour");
-		configParam(LPG_PARAM2, 0.0, 1.0, 0.5, "LPG Decay");
+		configParam(LPG_COLOR_PARAM, 0.0, 1.0, 0.5, "LPG Colour");
+		configParam(LPG_DECAY_PARAM, 0.0, 1.0, 0.5, "LPG Decay");
+		configParam(LPG_TIMBRE_PARAM, -1.0, 1.0, 0.0, "LPG to Timbre");
+		configParam(LPG_MORPH_PARAM, -1.0, 1.0, 0.0, "LPG to Morph");
+		configParam(LPG_FM_PARAM, -1.0, 1.0, 0.0, "LPG to Frequency");
 		for (int i=0;i<MAX_PLAITS_VOICES;++i)
 		{
 			stmlib::BufferAllocator allocator(shared_buffer[i], sizeof(shared_buffer[i]));
@@ -184,15 +190,15 @@ struct Plaits : Module {
 					patch[i].morph = params[MORPH_PARAM].getValue();
 				//}
 				//else {
-					float lpg_colour = params[LPG_PARAM1].getValue();
-					if (inputs[LPG_PAR1_INPUT].getChannels() < 2)
-						lpg_colour += inputs[LPG_PAR1_INPUT].getVoltage()/10.0f;
-					else lpg_colour += inputs[LPG_PAR1_INPUT].getVoltage(i)/10.0f;
+					float lpg_colour = params[LPG_COLOR_PARAM].getValue();
+					if (inputs[LPG_COLOR_INPUT].getChannels() < 2)
+						lpg_colour += inputs[LPG_COLOR_INPUT].getVoltage()/10.0f;
+					else lpg_colour += inputs[LPG_COLOR_INPUT].getVoltage(i)/10.0f;
 					patch[i].lpg_colour = clamp(lpg_colour,0.0f,1.0f);
-					float decay = params[LPG_PARAM2].getValue();
-					if (inputs[LPG_PAR2_INPUT].getChannels() < 2)
-						decay += inputs[LPG_PAR2_INPUT].getVoltage()/10.0f;
-					else decay += inputs[LPG_PAR2_INPUT].getVoltage(i)/10.0f;
+					float decay = params[LPG_DECAY_PARAM].getValue();
+					if (inputs[LPG_DECAY_INPUT].getChannels() < 2)
+						decay += inputs[LPG_DECAY_INPUT].getVoltage()/10.0f;
+					else decay += inputs[LPG_DECAY_INPUT].getVoltage(i)/10.0f;
 					patch[i].decay = clamp(decay,0.0f,1.0);
 				//}
 				patch[i].frequency_modulation_amount = params[FREQ_CV_PARAM].getValue();
@@ -204,7 +210,9 @@ struct Plaits : Module {
 				else
 					modulations[i].engine = inputs[ENGINE_INPUT].getVoltage(i) / 5.f;
 				modulations[i].note = inputs[NOTE_INPUT].getVoltage(i) * 12.f;
-				modulations[i].frequency = inputs[FREQ_INPUT].getVoltage() * 6.f;
+				if (inputs[FREQ_INPUT].getChannels() < 2)
+					modulations[i].frequency = inputs[FREQ_INPUT].getVoltage() * 6.f;
+				else modulations[i].frequency = inputs[FREQ_INPUT].getVoltage(i) * 6.f;
 				if (inputs[HARMONICS_INPUT].getChannels() < 2)
 					modulations[i].harmonics = inputs[HARMONICS_INPUT].getVoltage() / 5.f;
 				else
@@ -311,18 +319,22 @@ struct PlaitsWidget : ModuleWidget {
 
 		addParam(createParam<TL1105>(mm2px(Vec(23.32685, 14.6539)), module, Plaits::MODEL1_PARAM));
 		addParam(createParam<TL1105>(mm2px(Vec(32.22764, 14.6539)), module, Plaits::MODEL2_PARAM));
-		addParam(createParam<Rogan3PSWhite>(mm2px(Vec(3.1577, 20.21088)), module, Plaits::FREQ_PARAM));
-		addParam(createParam<Rogan3PSWhite>(mm2px(Vec(39.3327, 20.21088)), module, Plaits::HARMONICS_PARAM));
-		addParam(createParam<Rogan1PSWhite>(mm2px(Vec(4.04171, 49.6562)), module, Plaits::TIMBRE_PARAM));
-		addParam(createParam<Rogan1PSWhite>(mm2px(Vec(42.71716, 49.6562)), module, Plaits::MORPH_PARAM));
-		addParam(createParam<Trimpot>(mm2px(Vec(7.88712, 77.60705)), module, Plaits::TIMBRE_CV_PARAM));
-		addParam(createParam<Trimpot>(mm2px(Vec(27.2245, 77.60705)), module, Plaits::FREQ_CV_PARAM));
-		addParam(createParam<Trimpot>(mm2px(Vec(46.56189, 77.60705)), module, Plaits::MORPH_CV_PARAM));
+		addParam(createParam<Rogan3PSWhite>(mm2px(Vec(3.069, 17.984)), module, Plaits::FREQ_PARAM));
+		addParam(createParam<Rogan3PSWhite>(mm2px(Vec(39.333, 17.984)), module, Plaits::HARMONICS_PARAM));
+		addParam(createParam<Rogan1PSWhite>(mm2px(Vec(3.492, 42.673)), module, Plaits::TIMBRE_PARAM));
+		addParam(createParam<Rogan1PSWhite>(mm2px(Vec(43.439, 42.673)), module, Plaits::MORPH_PARAM));
+		addParam(createParam<Trimpot>(mm2px(Vec(7.782, 79.878)), module, Plaits::TIMBRE_CV_PARAM));
+		addParam(createParam<Trimpot>(mm2px(Vec(27.330, 83.374)), module, Plaits::FREQ_CV_PARAM));
+		addParam(createParam<Trimpot>(mm2px(Vec(46.515, 79.878)), module, Plaits::MORPH_CV_PARAM));
 		// 64, 100
-		addParam(createParam<Trimpot>(mm2px(Vec(17.55581, 70.33605)), module, Plaits::LPG_PARAM1));
-		addInput(createInput<PJ301MPort>(mm2px(Vec(16.52731, 80.84152)), module, Plaits::LPG_PAR1_INPUT));
-		addParam(createParam<Trimpot>(mm2px(Vec(36.893195, 70.33605)), module, Plaits::LPG_PARAM2));
-		addInput(createInput<PJ301MPort>(mm2px(Vec(35.864695, 80.84152)), module, Plaits::LPG_PAR2_INPUT));
+		addParam(createParam<Trimpot>(mm2px(Vec(17.556, 73.012)), module, Plaits::LPG_COLOR_PARAM));
+		addInput(createInput<PJ301MPort>(mm2px(Vec(16.528, 80.286)), module, Plaits::LPG_COLOR_INPUT));
+		addParam(createParam<Trimpot>(mm2px(Vec(36.923, 73.012)), module, Plaits::LPG_DECAY_PARAM));
+		addInput(createInput<PJ301MPort>(mm2px(Vec(35.894, 80.286)), module, Plaits::LPG_DECAY_INPUT));
+
+		addParam(createParam<Trimpot>(mm2px(Vec(15.778, 64.427)), module, Plaits::LPG_TIMBRE_PARAM));
+		addParam(createParam<Trimpot>(mm2px(Vec(27.330, 71.203)), module, Plaits::LPG_FM_PARAM));
+		addParam(createParam<Trimpot>(mm2px(Vec(39.131, 64.427)), module, Plaits::LPG_MORPH_PARAM));
 
 		addInput(createInput<PJ301MPort>(mm2px(Vec(3.31381, 92.48067)), module, Plaits::ENGINE_INPUT));
 		addInput(createInput<PJ301MPort>(mm2px(Vec(14.75983, 92.48067)), module, Plaits::TIMBRE_INPUT));
@@ -376,6 +388,10 @@ struct PlaitsWidget : ModuleWidget {
 		PlaitsLowCpuItem *lowCpuItem = createMenuItem<PlaitsLowCpuItem>("Low CPU", CHECKMARK(module->lowCpu));
 		lowCpuItem->module = module;
 		menu->addChild(lowCpuItem);
+		PlaitsLPGItem *lpgItem = createMenuItem<PlaitsLPGItem>("Edit LPG response/decay", CHECKMARK(module->lpg));
+		lpgItem->module = module;
+		menu->addChild(lpgItem);
+
 		menu->addChild(new MenuEntry());
 		menu->addChild(createMenuLabel("Models"));
 		for (int i = 0; i < 16; i++) {
