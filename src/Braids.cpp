@@ -85,8 +85,11 @@ struct Braids : Module {
 			for (int i=0;i<polychs;++i)
 			{
 
-			float fm = params[FM_PARAM].getValue() * inputs[FM_INPUT].getVoltage();
-
+			float fm; 
+			if (inputs[FM_INPUT].getChannels() < 2)
+				fm = params[FM_PARAM].getValue() * inputs[FM_INPUT].getVoltage();
+			else
+				fm = params[FM_PARAM].getValue() * inputs[FM_INPUT].getVoltage(i);
 			// Set shape
 			int shape = roundf(params[SHAPE_PARAM].getValue() * braids::MACRO_OSC_SHAPE_LAST_ACCESSIBLE_FROM_META);
 			if (settings[i].meta_modulation) {
@@ -98,8 +101,16 @@ struct Braids : Module {
 			osc[i].set_shape((braids::MacroOscillatorShape) settings[i].shape);
 
 			// Set timbre/modulation
-			float timbre = params[TIMBRE_PARAM].getValue() + params[MODULATION_PARAM].getValue() * inputs[TIMBRE_INPUT].getVoltage() / 5.0;
-			float modulation = params[COLOR_PARAM].getValue() + inputs[COLOR_INPUT].getVoltage() / 5.0;
+			float timbre; 
+			if (inputs[TIMBRE_INPUT].getChannels() < 2)
+				timbre = params[TIMBRE_PARAM].getValue() + params[MODULATION_PARAM].getValue() * inputs[TIMBRE_INPUT].getVoltage() / 5.0;
+			else
+				timbre = params[TIMBRE_PARAM].getValue() + params[MODULATION_PARAM].getValue() * inputs[TIMBRE_INPUT].getVoltage(i) / 5.0;
+			float modulation; 
+			if (inputs[COLOR_INPUT].getChannels() < 2)
+				modulation = params[COLOR_PARAM].getValue() + inputs[COLOR_INPUT].getVoltage() / 5.0;
+			else
+				modulation = params[COLOR_PARAM].getValue() + inputs[COLOR_INPUT].getVoltage(i) / 5.0;
 			int16_t param1 = rescale(clamp(timbre, 0.0f, 1.0f), 0.0f, 1.0f, 0, INT16_MAX);
 			int16_t param2 = rescale(clamp(modulation, 0.0f, 1.0f), 0.0f, 1.0f, 0, INT16_MAX);
 			osc[i].set_parameters(param1, param2);
