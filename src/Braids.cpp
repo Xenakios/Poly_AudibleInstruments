@@ -328,16 +328,31 @@ struct BraidsModelItem : MenuItem
 {
 	int modelNumber = 0;
 	Braids *braids = nullptr;
-	BraidsModelItem(int model, Braids* b) : modelNumber(model), braids(b) {}
 	void onAction(const event::Action &e) override {
 		for (int i=0;i<MAX_BRAIDS_VOICES;++i)
-			braids->params[Braids::SHAPE_PARAM].setValue(1.0f/47*modelNumber);
+			braids->params[Braids::SHAPE_PARAM].setValue(1.0f/46*modelNumber);
 	}
 	void step() override {
-		rightText = (braids->params[Braids::SHAPE_PARAM].getValue() == 1.0f/47*modelNumber ) ? "✔" : "";
+		rightText = (braids->params[Braids::SHAPE_PARAM].getValue() == 1.0f/46*modelNumber ) ? "✔" : "";
 		MenuItem::step();
 	}
 };
+
+struct ModelsMenuItem : MenuItem
+{
+	Braids* module = nullptr;
+	Menu *createChildMenu() override {
+		Menu *submenu = new Menu();
+		for (int i = 0; i < 47; i++) {
+			BraidsModelItem *item = createMenuItem<BraidsModelItem>(algo_values[i]);
+			item->braids = module;
+			item->modelNumber = i;
+			submenu->addChild(item);
+		}
+		return submenu;
+	}
+};
+
 
 struct BraidsWidget : ModuleWidget {
 	BraidsWidget(Braids *module) {
@@ -385,14 +400,9 @@ struct BraidsWidget : ModuleWidget {
 		menu->addChild(construct<BraidsSettingItem>(&MenuItem::text, "DRFT", &BraidsSettingItem::setting, &braids->settings[0].vco_drift, &BraidsSettingItem::onValue, 4));
 		menu->addChild(construct<BraidsSettingItem>(&MenuItem::text, "SIGN", &BraidsSettingItem::setting, &braids->settings[0].signature, &BraidsSettingItem::onValue, 4));
 		menu->addChild(construct<BraidsLowCpuItem>(&MenuItem::text, "Low CPU", &BraidsLowCpuItem::braids, braids));
-		/*
-		for (int i=0;i<48;++i)
-		{
-			BraidsModelItem* item = new BraidsModelItem(i,braids);
-			item->text = std::string(algo_values[i]);
-			menu->addChild(item);
-		}
-		*/
+		ModelsMenuItem* modelsitem = createMenuItem<ModelsMenuItem>("Synthesis model",RIGHT_ARROW);
+		modelsitem->module = braids;
+		menu->addChild(modelsitem);
 	}
 };
 
