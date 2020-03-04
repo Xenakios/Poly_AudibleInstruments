@@ -20,11 +20,12 @@ struct Plaits : Module {
 		TIMBRE_CV_PARAM,
 		FREQ_CV_PARAM,
 		MORPH_CV_PARAM,
+		TIMBRE_LPG_PARAM,
+		FREQ_LPG_PARAM,
+		MORPH_LPG_PARAM,
 		LPG_COLOR_PARAM,
 		LPG_DECAY_PARAM,
-		LPG_TIMBRE_PARAM,
-		LPG_FM_PARAM,
-		LPG_MORPH_PARAM,
+
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -75,11 +76,11 @@ struct Plaits : Module {
 		configParam(TIMBRE_CV_PARAM, -1.0, 1.0, 0.0, "Timbre CV");
 		configParam(FREQ_CV_PARAM, -1.0, 1.0, 0.0, "Frequency CV");
 		configParam(MORPH_CV_PARAM, -1.0, 1.0, 0.0, "Morph CV");
+		configParam(TIMBRE_LPG_PARAM, -1.0, 1.0, 0.0, "LPG to Timbre");
+		configParam(MORPH_LPG_PARAM, -1.0, 1.0, 0.0, "LPG to Morph");
+		configParam(FREQ_LPG_PARAM, -1.0, 1.0, 0.0, "LPG to Frequency");
 		configParam(LPG_COLOR_PARAM, 0.0, 1.0, 0.5, "LPG Colour");
 		configParam(LPG_DECAY_PARAM, 0.0, 1.0, 0.5, "LPG Decay");
-		configParam(LPG_TIMBRE_PARAM, -1.0, 1.0, 0.0, "LPG to Timbre");
-		configParam(LPG_MORPH_PARAM, -1.0, 1.0, 0.0, "LPG to Morph");
-		configParam(LPG_FM_PARAM, -1.0, 1.0, 0.0, "LPG to Frequency");
 		for (int i=0;i<MAX_PLAITS_VOICES;++i)
 		{
 			stmlib::BufferAllocator allocator(shared_buffer[i], sizeof(shared_buffer[i]));
@@ -201,9 +202,12 @@ struct Plaits : Module {
 					else decay += inputs[LPG_DECAY_INPUT].getVoltage(i)/10.0f;
 					patch[i].decay = clamp(decay,0.0f,1.0);
 				//}
-				patch[i].frequency_modulation_amount = params[FREQ_CV_PARAM].getValue();
-				patch[i].timbre_modulation_amount = params[TIMBRE_CV_PARAM].getValue();
-				patch[i].morph_modulation_amount = params[MORPH_CV_PARAM].getValue();
+				patch[i].frequency_cv_amount = params[FREQ_CV_PARAM].getValue();
+				patch[i].timbre_cv_amount = params[TIMBRE_CV_PARAM].getValue();
+				patch[i].morph_cv_amount = params[MORPH_CV_PARAM].getValue();
+				patch[i].frequency_lpg_amount = params[FREQ_LPG_PARAM].getValue();
+				patch[i].timbre_lpg_amount = params[TIMBRE_LPG_PARAM].getValue();
+				patch[i].morph_lpg_amount = params[MORPH_LPG_PARAM].getValue();
 				// Update modulations
 				if (inputs[ENGINE_INPUT].getChannels() < 2)
 					modulations[i].engine = inputs[ENGINE_INPUT].getVoltage() / 5.f;
@@ -332,9 +336,9 @@ struct PlaitsWidget : ModuleWidget {
 		addParam(createParam<Trimpot>(mm2px(Vec(36.923, 73.012)), module, Plaits::LPG_DECAY_PARAM));
 		addInput(createInput<PJ301MPort>(mm2px(Vec(35.894, 80.286)), module, Plaits::LPG_DECAY_INPUT));
 
-		addParam(createParam<Trimpot>(mm2px(Vec(15.778, 64.427)), module, Plaits::LPG_TIMBRE_PARAM));
-		addParam(createParam<Trimpot>(mm2px(Vec(27.330, 71.203)), module, Plaits::LPG_FM_PARAM));
-		addParam(createParam<Trimpot>(mm2px(Vec(39.131, 64.427)), module, Plaits::LPG_MORPH_PARAM));
+		addParam(createParam<Trimpot>(mm2px(Vec(15.778, 64.427)), module, Plaits::TIMBRE_LPG_PARAM));
+		addParam(createParam<Trimpot>(mm2px(Vec(27.330, 71.203)), module, Plaits::FREQ_LPG_PARAM));
+		addParam(createParam<Trimpot>(mm2px(Vec(39.131, 64.427)), module, Plaits::MORPH_LPG_PARAM));
 
 		addInput(createInput<PJ301MPort>(mm2px(Vec(3.31381, 92.48067)), module, Plaits::ENGINE_INPUT));
 		addInput(createInput<PJ301MPort>(mm2px(Vec(14.75983, 92.48067)), module, Plaits::TIMBRE_INPUT));
