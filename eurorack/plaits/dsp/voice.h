@@ -191,7 +191,9 @@ class Voice {
         ? (use_internal_envelope
             ? cv_modulation_amount * external_modulation + lpg_modulation_amount * envelope
             : cv_modulation_amount * external_modulation)
-        : (use_internal_envelope ? lpg_modulation_amount * envelope : cv_modulation_amount * default_internal_modulation);
+        : (use_internal_envelope 
+            ? lpg_modulation_amount * envelope + cv_modulation_amount * default_internal_modulation
+            : cv_modulation_amount * default_internal_modulation);
 
     CONSTRAIN(value, minimum_value, maximum_value);
     return value;
