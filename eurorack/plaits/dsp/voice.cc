@@ -154,10 +154,10 @@ void Voice::Render(
     internal_envelope_amplitude = 2.0f - p.harmonics * 6.0f;
     CONSTRAIN(internal_envelope_amplitude, 0.0f, 1.0f);
     speech_engine_.set_prosody_amount(
-        !modulations.trigger_patched || modulations.frequency_patched ?
+        !modulations.trigger_patched ?
             0.0f : patch.frequency_lpg_amount);
     speech_engine_.set_speed(
-        !modulations.trigger_patched || modulations.morph_patched ?
+        !modulations.trigger_patched ?
             0.0f : patch.morph_lpg_amount);
   }
 
