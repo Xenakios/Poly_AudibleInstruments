@@ -311,6 +311,13 @@ static const std::string modelLabels[16] = {
 };
 
 
+struct Rogan0PSWhite : Rogan {
+	Rogan0PSWhite() {
+		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Rogan0PSWhite.svg")));
+	}
+};
+
+
 struct PlaitsWidget : ModuleWidget {
 	PlaitsWidget(Plaits *module) {
 		setModule(module);
@@ -331,9 +338,9 @@ struct PlaitsWidget : ModuleWidget {
 		addParam(createParam<Trimpot>(mm2px(Vec(27.330, 83.374)), module, Plaits::FREQ_CV_PARAM));
 		addParam(createParam<Trimpot>(mm2px(Vec(46.515, 79.878)), module, Plaits::MORPH_CV_PARAM));
 		// 64, 100
-		addParam(createParam<Trimpot>(mm2px(Vec(17.556, 73.012)), module, Plaits::LPG_COLOR_PARAM));
+		addParam(createParam<Rogan0PSWhite>(mm2px(Vec(17.556, 73.012)), module, Plaits::LPG_COLOR_PARAM));
 		addInput(createInput<PJ301MPort>(mm2px(Vec(16.528, 80.286)), module, Plaits::LPG_COLOR_INPUT));
-		addParam(createParam<Trimpot>(mm2px(Vec(36.923, 73.012)), module, Plaits::LPG_DECAY_PARAM));
+		addParam(createParam<Rogan0PSWhite>(mm2px(Vec(36.923, 73.012)), module, Plaits::LPG_DECAY_PARAM));
 		addInput(createInput<PJ301MPort>(mm2px(Vec(35.894, 80.286)), module, Plaits::LPG_DECAY_INPUT));
 
 		addParam(createParam<Trimpot>(mm2px(Vec(15.778, 64.427)), module, Plaits::TIMBRE_LPG_PARAM));
