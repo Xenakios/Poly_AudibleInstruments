@@ -21,13 +21,21 @@ SOURCES += $(wildcard eurorack/plaits/dsp/*.cc)
 SOURCES += $(wildcard eurorack/plaits/dsp/engine/*.cc)
 SOURCES += $(wildcard eurorack/plaits/dsp/speech/*.cc)
 SOURCES += $(wildcard eurorack/plaits/dsp/physical_modelling/*.cc)
+SOURCES += eurorack/plaits/resources.cc
+
 SOURCES += eurorack/braids/analog_oscillator.cc
 SOURCES += eurorack/braids/digital_oscillator.cc
 SOURCES += eurorack/braids/resources.cc
 SOURCES += eurorack/braids/macro_oscillator.cc
 SOURCES += eurorack/braids/quantizer.cc
-SOURCES += eurorack/plaits/resources.cc
 
+SOURCES += eurorack/marbles/random/t_generator.cc
+SOURCES += eurorack/marbles/random/x_y_generator.cc
+SOURCES += eurorack/marbles/random/output_channel.cc
+SOURCES += eurorack/marbles/random/lag_processor.cc
+SOURCES += eurorack/marbles/random/quantizer.cc
+SOURCES += eurorack/marbles/ramp/ramp_extractor.cc
+SOURCES += eurorack/marbles/resources.cc
 
 # Add files to the ZIP package when running `make dist`
 # The compiled plugin and "plugin.json" are automatically added.

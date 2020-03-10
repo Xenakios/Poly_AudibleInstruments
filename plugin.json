@@ -32,7 +32,18 @@
         "Hardware",
         "Polyphonic"
       ]
+    },
+    {
+      "slug": "PolyMarbles",
+      "name": "Random Sampler",
+      "description": "Based on Mutable Instruments Marbles",
+      "modularGridUrl": "https://www.modulargrid.net/e/mutable-instruments-marbles",
+      "tags": [
+        "Random",
+        "Hardware clone"
+      ]
     }
+
 
 
   ]

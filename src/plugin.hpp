@@ -9,3 +9,5 @@ extern Plugin *pluginInstance;
 // Declare each Model, defined in each module source file
 extern Model *modelPlaits;
 extern Model *modelBraids;
+extern Model *modelMarbles;
+
