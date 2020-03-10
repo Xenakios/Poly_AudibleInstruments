@@ -145,6 +145,7 @@ struct Marbles : Module {
 		EXTERNAL_PARAM,
 		T_JITTER_PARAM,
 		X_STEPS_PARAM,
+		GATE_LEN_PARAM,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -242,7 +243,7 @@ struct Marbles : Module {
 		configParam(EXTERNAL_PARAM, 0.0, 1.0, 0.0, "External processing mode");
 		configParam(T_JITTER_PARAM, 0.0, 1.0, 0.0, "Randomness amount");
 		configParam(X_STEPS_PARAM, 0.0, 1.0, 0.5, "Smoothness");
-
+		configParam(GATE_LEN_PARAM, 0.0, 1.0, 0.5, "Gate length");
 		random_generator.Init(1);
 		random_stream.Init(&random_generator);
 		note_filter.Init();
@@ -461,7 +462,8 @@ struct Marbles : Module {
 		t_generator.set_deja_vu(t_deja_vu ? deja_vu : 0.f);
 		t_generator.set_length(deja_vu_length);
 		
-		t_generator.set_pulse_width_mean(_gate_len);
+		//t_generator.set_pulse_width_mean(_gate_len);
+		t_generator.set_pulse_width_mean(params[GATE_LEN_PARAM].getValue());
 		t_generator.set_pulse_width_std(_gate_len_dev);
 
 		t_generator.Process(t_external_clock, t_clocks, ramps, gates, BLOCK_SIZE);
@@ -560,6 +562,8 @@ struct MarblesWidget : ModuleWidget {
 		addParam(createParamCentered<TL1105>(mm2px(Vec(45.694, 67.294)), module, Marbles::EXTERNAL_PARAM));
 		addParam(createParamCentered<Rogan2PSWhite>(mm2px(Vec(31.544, 73.694)), module, Marbles::T_JITTER_PARAM));
 		addParam(createParamCentered<Rogan2PSWhite>(mm2px(Vec(59.845, 73.694)), module, Marbles::X_STEPS_PARAM));
+
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(18.0, 80.0)), module, Marbles::GATE_LEN_PARAM));
 
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(9.545, 81.944)), module, Marbles::T_BIAS_INPUT));
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(81.844, 81.944)), module, Marbles::X_BIAS_INPUT));
