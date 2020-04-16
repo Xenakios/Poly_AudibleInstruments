@@ -123,10 +123,11 @@ struct Patch {
   float frequency_cv_amount;
   float timbre_cv_amount;
   float morph_cv_amount;
+  float harmonics_cv_amount;
   float frequency_lpg_amount;
   float timbre_lpg_amount;
   float morph_lpg_amount;
-
+  float harmonics_lpg_amount;
   int engine;
   float decay;
   float lpg_colour;
@@ -145,6 +146,7 @@ struct Modulations {
   bool frequency_patched;
   bool timbre_patched;
   bool morph_patched;
+  bool harmonics_patched;
   bool trigger_patched;
   bool level_patched;
 };
@@ -157,6 +159,7 @@ class Voice {
   struct Frame {
     short out;
     short aux;
+    
   };
 
   void Init(stmlib::BufferAllocator* allocator);
@@ -166,7 +169,7 @@ class Voice {
       Frame* frames,
       size_t size);
   inline int active_engine() const { return previous_engine_index_; }
-
+  float getDecayEnvelopeValue() const { return decay_envelope_.value(); } 
  private:
   void ComputeDecayParameters(const Patch& settings);
 

@@ -25,7 +25,9 @@ struct Plaits : Module {
 		MORPH_LPG_PARAM,
 		LPG_COLOR_PARAM,
 		LPG_DECAY_PARAM,
-
+		OUTMIX_PARAM,
+		HARMONICS_CV_PARAM,
+		HARMONICS_LPG_PARAM,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -44,6 +46,8 @@ struct Plaits : Module {
 	enum OutputIds {
 		OUT_OUTPUT,
 		AUX_OUTPUT,
+		AUX2_OUTPUT,
+		ENV_OUTPUT,
 		NUM_OUTPUTS
 	};
 	enum LightIds {
@@ -81,6 +85,9 @@ struct Plaits : Module {
 		configParam(FREQ_LPG_PARAM, -1.0, 1.0, 0.0, "LPG to Frequency");
 		configParam(LPG_COLOR_PARAM, 0.0, 1.0, 0.5, "LPG Colour");
 		configParam(LPG_DECAY_PARAM, 0.0, 1.0, 0.5, "LPG Decay");
+		configParam(OUTMIX_PARAM, 0.0, 1.0, 0.5, "Output mix");
+		configParam(HARMONICS_CV_PARAM, -1.0, 1.0, 0.0, "Harmonics CV");
+		configParam(HARMONICS_LPG_PARAM, -1.0, 1.0, 0.0, "LPG to Harmonics");
 		for (int i=0;i<MAX_PLAITS_VOICES;++i)
 		{
 			stmlib::BufferAllocator allocator(shared_buffer[i], sizeof(shared_buffer[i]));
@@ -205,9 +212,11 @@ struct Plaits : Module {
 				patch[i].frequency_cv_amount = params[FREQ_CV_PARAM].getValue();
 				patch[i].timbre_cv_amount = params[TIMBRE_CV_PARAM].getValue();
 				patch[i].morph_cv_amount = params[MORPH_CV_PARAM].getValue();
+				patch[i].harmonics_cv_amount = params[HARMONICS_CV_PARAM].getValue();
 				patch[i].frequency_lpg_amount = params[FREQ_LPG_PARAM].getValue();
 				patch[i].timbre_lpg_amount = params[TIMBRE_LPG_PARAM].getValue();
 				patch[i].morph_lpg_amount = params[MORPH_LPG_PARAM].getValue();
+				patch[i].harmonics_lpg_amount = params[HARMONICS_LPG_PARAM].getValue();
 				// Update modulations
 				if (inputs[ENGINE_INPUT].getChannels() < 2)
 					modulations[i].engine = inputs[ENGINE_INPUT].getVoltage() / 5.f;
@@ -242,6 +251,7 @@ struct Plaits : Module {
 				modulations[i].frequency_patched = inputs[FREQ_INPUT].isConnected();
 				modulations[i].timbre_patched = inputs[TIMBRE_INPUT].isConnected();
 				modulations[i].morph_patched = inputs[MORPH_INPUT].isConnected();
+				modulations[i].harmonics_patched = inputs[HARMONICS_INPUT].isConnected();
 				modulations[i].trigger_patched = inputs[TRIGGER_INPUT].isConnected();
 				modulations[i].level_patched = inputs[LEVEL_INPUT].isConnected();
 			}
@@ -277,14 +287,22 @@ struct Plaits : Module {
 		}
 		outputs[OUT_OUTPUT].setChannels(numpolychs);
 		outputs[AUX_OUTPUT].setChannels(numpolychs);
+		outputs[AUX2_OUTPUT].setChannels(numpolychs);
+		outputs[ENV_OUTPUT].setChannels(numpolychs);
 		// Set output
+		float outmix = params[OUTMIX_PARAM].getValue();
 		for (int i=0;i<numpolychs;++i)
 		{
 			if (!outputBuffer[i].empty()) {
 				dsp::Frame<2> outputFrame = outputBuffer[i].shift();
 				// Inverting op-amp on outputs
-				outputs[OUT_OUTPUT].setVoltage(-outputFrame.samples[0] * 5.f,i);
-				outputs[AUX_OUTPUT].setVoltage(-outputFrame.samples[1] * 5.f,i);
+				float out1 = -outputFrame.samples[0] * 5.f;
+				float out2 = -outputFrame.samples[1] * 5.f;
+				outputs[OUT_OUTPUT].setVoltage(out1,i);
+				outputs[AUX_OUTPUT].setVoltage(out2,i);
+				float out3 = outmix*out2 + (1.0f-outmix)*out1;
+				outputs[AUX2_OUTPUT].setVoltage(out3,i);
+				outputs[ENV_OUTPUT].setVoltage(voice[i].getDecayEnvelopeValue(),i);
 			}
 		}
 	}
@@ -337,6 +355,8 @@ struct PlaitsWidget : ModuleWidget {
 		addParam(createParam<Trimpot>(mm2px(Vec(7.782, 79.878)), module, Plaits::TIMBRE_CV_PARAM));
 		addParam(createParam<Trimpot>(mm2px(Vec(27.330, 83.374)), module, Plaits::FREQ_CV_PARAM));
 		addParam(createParam<Trimpot>(mm2px(Vec(46.515, 79.878)), module, Plaits::MORPH_CV_PARAM));
+		addParam(createParam<Trimpot>(mm2px(Vec(19.131, 117.08103)), module, Plaits::HARMONICS_CV_PARAM));
+		addParam(createParam<Trimpot>(mm2px(Vec(9.131, 117.08103)), module, Plaits::HARMONICS_LPG_PARAM));
 		// 64, 100
 		addParam(createParam<Rogan0PSWhite>(mm2px(Vec(17.556, 73.012)), module, Plaits::LPG_COLOR_PARAM));
 		addInput(createInput<PJ301MPort>(mm2px(Vec(16.528, 80.286)), module, Plaits::LPG_COLOR_INPUT));
@@ -358,6 +378,9 @@ struct PlaitsWidget : ModuleWidget {
 
 		addOutput(createOutput<PJ301MPort>(mm2px(Vec(37.65257, 107.08103)), module, Plaits::OUT_OUTPUT));
 		addOutput(createOutput<PJ301MPort>(mm2px(Vec(49.0986, 107.08103)), module, Plaits::AUX_OUTPUT));
+		addOutput(createOutput<PJ301MPort>(mm2px(Vec(37.65257, 117.08103)), module, Plaits::AUX2_OUTPUT));
+		addOutput(createOutput<PJ301MPort>(mm2px(Vec(49.0986, 117.08103)), module, Plaits::ENV_OUTPUT));
+		addParam(createParam<Trimpot>(mm2px(Vec(29.131, 117.08103)), module, Plaits::OUTMIX_PARAM));
 
 		addChild(createLight<MediumLight<GreenRedLight>>(mm2px(Vec(28.79498, 23.31649)), module, Plaits::MODEL_LIGHT + 0 * 2));
 		addChild(createLight<MediumLight<GreenRedLight>>(mm2px(Vec(28.79498, 28.71704)), module, Plaits::MODEL_LIGHT + 1 * 2));

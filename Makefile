@@ -1,3 +1,6 @@
+CC := clang
+CXX := clang++
+
 # If RACK_DIR is not defined when calling the Makefile, default to two directories above
 RACK_DIR ?= ../Rack-SDK
 

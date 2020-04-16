@@ -197,7 +197,19 @@ void Voice::Render(
       0.0f,
       0.0f,
       1.0f);
-
+  
+  p.harmonics = ApplyModulations(
+      patch.harmonics,
+      patch.harmonics_cv_amount,
+      patch.harmonics_lpg_amount,
+      modulations.harmonics_patched,
+      modulations.harmonics,
+      use_internal_envelope,
+      internal_envelope_amplitude * decay_envelope_.value(),
+      0.0f,
+      0.0f,
+      1.0f);
+  
   bool already_enveloped = pp_s.already_enveloped;
   e->Render(p, out_buffer_, aux_buffer_, size, &already_enveloped);
 
