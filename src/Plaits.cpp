@@ -149,22 +149,19 @@ struct Plaits : Module {
 	}
 	inline float getUniSpreadAmount(int numchans, int chan, float spreadpar)
 	{
-		// spread slowly to -0.5 to 0.5 semitones
+		// spread slowly to ± 0.5 semitones
 		if (spreadpar<0.5f)
 		{
 			float spreadnorm = spreadpar*2.0f;
 			float spreadmt = spreadnorm*0.5;
 			return rescale(chan,0,numchans-1,-spreadmt,spreadmt);
-		// spread faster over 2 octaves
+		// spread faster to ± 2 octaves
 		} else if (spreadpar>=0.5f && spreadpar<0.9f)
 		{
 			float spreadnorm = (spreadpar-0.5f)*2.0f;
 			float spreadmt = rescale(spreadpar,0.5f,0.9f,0.5f,12.0f);
-			//const float pitches[3] = {-spreadmt,0.0f,spreadmt};
-			//int index = chan % 3;
-			//return pitches[index];
 			return rescale(chan,0,numchans-1,-spreadmt,spreadmt);
-		// finally spread/morph towards -1, 0, +1 octave for all voices
+		// finally morph towards -1, 0, +1 octave for all voices
 		} else
 		{
 			float interpos = rescale(spreadpar,0.9f,1.0f,0.0f,1.0f);
