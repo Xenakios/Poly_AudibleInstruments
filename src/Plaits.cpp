@@ -28,6 +28,8 @@ struct Plaits : Module {
 		OUTMIX_PARAM,
 		HARMONICS_CV_PARAM,
 		HARMONICS_LPG_PARAM,
+		UNISONOMODE_PARAM,
+		UNISONOSPREAD_PARAM,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -41,13 +43,14 @@ struct Plaits : Module {
 		NOTE_INPUT,
 		LPG_COLOR_INPUT,
 		LPG_DECAY_INPUT,
+		SPREAD_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
 		OUT_OUTPUT,
 		AUX_OUTPUT,
 		AUX2_OUTPUT,
-		ENV_OUTPUT,
+		PITCH_SPREAD_OUTPUT,
 		NUM_OUTPUTS
 	};
 	enum LightIds {
@@ -88,6 +91,8 @@ struct Plaits : Module {
 		configParam(OUTMIX_PARAM, 0.0, 1.0, 0.5, "Output mix");
 		configParam(HARMONICS_CV_PARAM, -1.0, 1.0, 0.0, "Harmonics CV");
 		configParam(HARMONICS_LPG_PARAM, -1.0, 1.0, 0.0, "LPG to Harmonics");
+		configParam(UNISONOMODE_PARAM, 1.0, 16.0, 1.0, "Unisono/Spread num voices");
+		configParam(UNISONOSPREAD_PARAM, 0.0, 1.0, 0.0, "Unisono/Spread");
 		for (int i=0;i<MAX_PLAITS_VOICES;++i)
 		{
 			stmlib::BufferAllocator allocator(shared_buffer[i], sizeof(shared_buffer[i]));
@@ -142,9 +147,46 @@ struct Plaits : Module {
 			for (int i=0;i<MAX_PLAITS_VOICES;++i)
 				patch[i].decay = json_number_value(decayJ);
 	}
-
+	inline float getUniSpreadAmount(int numchans, int chan, float spreadpar)
+	{
+		// spread slowly to -0.5 to 0.5 semitones
+		if (spreadpar<0.5f)
+		{
+			float spreadnorm = spreadpar*2.0f;
+			float spreadmt = spreadnorm*0.5;
+			return rescale(chan,0,numchans-1,-spreadmt,spreadmt);
+		// spread faster over 2 octaves
+		} else if (spreadpar>=0.5f && spreadpar<0.9f)
+		{
+			float spreadnorm = (spreadpar-0.5f)*2.0f;
+			float spreadmt = rescale(spreadpar,0.5f,0.9f,0.5f,12.0f);
+			//const float pitches[3] = {-spreadmt,0.0f,spreadmt};
+			//int index = chan % 3;
+			//return pitches[index];
+			return rescale(chan,0,numchans-1,-spreadmt,spreadmt);
+		// finally spread/morph towards -1, 0, +1 octave for all voices
+		} else
+		{
+			float interpos = rescale(spreadpar,0.9f,1.0f,0.0f,1.0f);
+			float y0 = rescale(chan,0,numchans-1,-12.0f,12.0f);
+			const float pitches[3] = {-12.0f,0.0f,12.0f};
+			int index = chan % 3;
+			float y1 = pitches[index];
+			return y0+(y1-y0)*interpos;
+		}
+		return 0.0f;
+	}
 	void process(const ProcessArgs &args) override {
+		float spreadamt = params[UNISONOSPREAD_PARAM].getValue();
+		if (inputs[SPREAD_INPUT].isConnected())
+		{
+			spreadamt += rescale(inputs[SPREAD_INPUT].getVoltage(),-5.0f,5.0f,-1.0f,1.0f);
+			spreadamt = clamp(spreadamt,0.0f,1.0f);
+		}
 		int numpolychs = std::max(inputs[NOTE_INPUT].getChannels(),1);
+		int unispreadchans = params[UNISONOMODE_PARAM].getValue();
+		if (unispreadchans>=2)
+			numpolychs = unispreadchans;
 		if (outputBuffer[0].empty()) {
 			const int blockSize = 12;
 
@@ -189,9 +231,12 @@ struct Plaits : Module {
 			if (lowCpu)
 				pitch += log2f(48000.f * args.sampleTime);
 			// Update patch
+			
 			for (int i=0;i<numpolychs;++i)
 			{
 				patch[i].note = 60.f + pitch * 12.f;
+				if (unispreadchans>1)
+					patch[i].note+=getUniSpreadAmount(unispreadchans,i,spreadamt);
 				patch[i].harmonics = params[HARMONICS_PARAM].getValue();
 				//if (!lpg) {
 					patch[i].timbre = params[TIMBRE_PARAM].getValue();
@@ -222,10 +267,14 @@ struct Plaits : Module {
 					modulations[i].engine = inputs[ENGINE_INPUT].getVoltage() / 5.f;
 				else
 					modulations[i].engine = inputs[ENGINE_INPUT].getVoltage(i) / 5.f;
-				modulations[i].note = inputs[NOTE_INPUT].getVoltage(i) * 12.f;
+				if (unispreadchans<2)
+					modulations[i].note = inputs[NOTE_INPUT].getVoltage(i) * 12.f;
+				else
+					modulations[i].note = inputs[NOTE_INPUT].getVoltage() * 12.f;
 				if (inputs[FREQ_INPUT].getChannels() < 2)
 					modulations[i].frequency = inputs[FREQ_INPUT].getVoltage() * 6.f;
-				else modulations[i].frequency = inputs[FREQ_INPUT].getVoltage(i) * 6.f;
+				else 
+					modulations[i].frequency = inputs[FREQ_INPUT].getVoltage(i) * 6.f;
 				if (inputs[HARMONICS_INPUT].getChannels() < 2)
 					modulations[i].harmonics = inputs[HARMONICS_INPUT].getVoltage() / 5.f;
 				else
@@ -288,7 +337,7 @@ struct Plaits : Module {
 		outputs[OUT_OUTPUT].setChannels(numpolychs);
 		outputs[AUX_OUTPUT].setChannels(numpolychs);
 		outputs[AUX2_OUTPUT].setChannels(numpolychs);
-		outputs[ENV_OUTPUT].setChannels(numpolychs);
+		outputs[PITCH_SPREAD_OUTPUT].setChannels(numpolychs);
 		// Set output
 		float outmix = params[OUTMIX_PARAM].getValue();
 		for (int i=0;i<numpolychs;++i)
@@ -302,7 +351,9 @@ struct Plaits : Module {
 				outputs[AUX_OUTPUT].setVoltage(out2,i);
 				float out3 = outmix*out2 + (1.0f-outmix)*out1;
 				outputs[AUX2_OUTPUT].setVoltage(out3,i);
-				outputs[ENV_OUTPUT].setVoltage(voice[i].getDecayEnvelopeValue(),i);
+				float pitchv = getUniSpreadAmount(numpolychs,i,spreadamt);
+				pitchv = rescale(pitchv,-12.0f,12.0f,-5.0f,5.0f);
+				outputs[PITCH_SPREAD_OUTPUT].setVoltage(pitchv,i);
 			}
 		}
 	}
@@ -379,8 +430,12 @@ struct PlaitsWidget : ModuleWidget {
 		addOutput(createOutput<PJ301MPort>(mm2px(Vec(37.65257, 107.08103)), module, Plaits::OUT_OUTPUT));
 		addOutput(createOutput<PJ301MPort>(mm2px(Vec(49.0986, 107.08103)), module, Plaits::AUX_OUTPUT));
 		addOutput(createOutput<PJ301MPort>(mm2px(Vec(37.65257, 117.08103)), module, Plaits::AUX2_OUTPUT));
-		addOutput(createOutput<PJ301MPort>(mm2px(Vec(49.0986, 117.08103)), module, Plaits::ENV_OUTPUT));
+		addOutput(createOutput<PJ301MPort>(mm2px(Vec(49.0986, 117.08103)), module, Plaits::PITCH_SPREAD_OUTPUT));
 		addParam(createParam<Trimpot>(mm2px(Vec(29.131, 117.08103)), module, Plaits::OUTMIX_PARAM));
+
+		addParam(createParam<Trimpot>(mm2px(Vec(18.0, 6.0)), module, Plaits::UNISONOMODE_PARAM));
+		addParam(createParam<Trimpot>(mm2px(Vec(26.0, 6.0)), module, Plaits::UNISONOSPREAD_PARAM));
+		addInput(createInput<PJ301MPort>(mm2px(Vec(34.0, 6.0)), module, Plaits::SPREAD_INPUT));
 
 		addChild(createLight<MediumLight<GreenRedLight>>(mm2px(Vec(28.79498, 23.31649)), module, Plaits::MODEL_LIGHT + 0 * 2));
 		addChild(createLight<MediumLight<GreenRedLight>>(mm2px(Vec(28.79498, 28.71704)), module, Plaits::MODEL_LIGHT + 1 * 2));
