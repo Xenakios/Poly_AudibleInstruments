@@ -39,7 +39,7 @@ using namespace stmlib;
 
 void VirtualAnalogEngine::Init(BufferAllocator* allocator) {
   primary_.Init();
-  auxiliary_.Init();
+  auxiliary_.Init(0.1f); // prevent initial silence when Plaits harmonics parameter at exactly zero
   sync_.Init();
   variable_saw_.Init();
   
