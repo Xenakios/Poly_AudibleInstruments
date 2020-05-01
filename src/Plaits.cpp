@@ -165,6 +165,7 @@ struct Plaits : Module {
 		} else
 		{
 			float interpos = rescale(spreadpar,0.9f,1.0f,0.0f,1.0f);
+			interpos = 1.0-(std::pow(1.0-interpos,3.0f));
 			float y0 = rescale(chan,0,numchans-1,-12.0f,12.0f);
 			const float pitches[3] = {-12.0f,0.0f,12.0f};
 			int index = chan % 3;
