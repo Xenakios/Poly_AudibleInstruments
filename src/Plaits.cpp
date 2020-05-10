@@ -155,7 +155,7 @@ struct Plaits : Module {
 			float spreadnorm = spreadpar*2.0f;
 			float spreadmt = spreadnorm*0.5;
 			return rescale(chan,0,numchans-1,-spreadmt,spreadmt);
-		// spread faster to ± 2 octaves
+		// spread faster to ± 1 octaves
 		} else if (spreadpar>=0.5f && spreadpar<0.9f)
 		{
 			float spreadnorm = (spreadpar-0.5f)*2.0f;

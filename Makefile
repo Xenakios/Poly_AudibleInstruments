@@ -40,6 +40,15 @@ SOURCES += eurorack/marbles/random/quantizer.cc
 SOURCES += eurorack/marbles/ramp/ramp_extractor.cc
 SOURCES += eurorack/marbles/resources.cc
 
+SOURCES += eurorack/clouds/dsp/correlator.cc
+SOURCES += eurorack/clouds/dsp/granular_processor.cc
+SOURCES += eurorack/clouds/dsp/mu_law.cc
+SOURCES += eurorack/clouds/dsp/pvoc/frame_transformation.cc
+SOURCES += eurorack/clouds/dsp/pvoc/phase_vocoder.cc
+SOURCES += eurorack/clouds/dsp/pvoc/stft.cc
+SOURCES += eurorack/clouds/resources.cc
+
+
 # Add files to the ZIP package when running `make dist`
 # The compiled plugin and "plugin.json" are automatically added.
 DISTRIBUTABLES += res

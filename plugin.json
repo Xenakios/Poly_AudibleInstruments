@@ -42,10 +42,19 @@
         "Random",
         "Hardware clone"
       ]
+    },
+    {
+      "slug": "PolyClouds",
+      "name": "Texture Synthesizer",
+      "description": "Based on Mutable Instruments Clouds",
+      "manualUrl": "https://mutable-instruments.net/modules/clouds/manual/",
+      "modularGridUrl": "https://www.modulargrid.net/e/mutable-instruments-clouds",
+      "tags": [
+        "Granular",
+        "Reverb",
+        "Hardware clone"
+      ]
     }
-
-
-
   ]
 }
 
