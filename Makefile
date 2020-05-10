@@ -47,7 +47,7 @@ SOURCES += eurorack/clouds/dsp/pvoc/frame_transformation.cc
 SOURCES += eurorack/clouds/dsp/pvoc/phase_vocoder.cc
 SOURCES += eurorack/clouds/dsp/pvoc/stft.cc
 SOURCES += eurorack/clouds/resources.cc
-
+# SOURCES += eurorack/clouds/dsp/pvoc/spectral_clouds_transformation.cc
 
 # Add files to the ZIP package when running `make dist`
 # The compiled plugin and "plugin.json" are automatically added.
