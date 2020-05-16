@@ -409,20 +409,33 @@ public:
 		auto modul = dynamic_cast<Plaits*>(this->paramQuantity->module);
 		if (modul)
 		{
-			float modulated = modul->getModulatedParamNormalized(this->paramQuantity->paramId);
-			float angle = rescale(modulated,0.0f,1.0f,this->minAngle,this->maxAngle)-1.5708;
-			float xpos = args.clipBox.pos.x;
-			float ypos = args.clipBox.pos.y;
-			float w = args.clipBox.size.x;
-			float h = args.clipBox.size.y;
-			float xcor = xpos + (w/2.0f) + (w/2.0f) * std::cos(angle);
-			float ycor = ypos + (w/2.0f) + (w/2.0f) * std::sin(angle);
+			static const NVGcolor colors[4]=
+			{
+				nvgRGBA(0x00, 0xee, 0x00, 0xff),
+				nvgRGBA(0xee, 0x00, 0x00, 0xff),
+				nvgRGBA(0x00, 0x00, 0xee, 0xff),
+				nvgRGBA(0x00, 0xee, 0xee, 0xff),
+			};
 			nvgSave(args.vg);
-			nvgBeginPath(args.vg);
-			nvgCircle(args.vg,xcor,ycor,3.0f);
-			nvgFillColor(args.vg, nvgRGBA(0x00, 0xee, 0x00, 0xff));
-			//nvgRect(args.vg,args.clipBox.pos.x,args.clipBox.pos.y,args.clipBox.size.x,args.clipBox.size.y);
-			nvgFill(args.vg);
+			for (int i=0;i<1;++i)
+			{
+				float modulated = modul->getModulatedParamNormalized(this->paramQuantity->paramId,i);
+				float angle = rescale(modulated,0.0f,1.0f,this->minAngle,this->maxAngle)-1.5708;
+				float xpos = args.clipBox.pos.x;
+				float ypos = args.clipBox.pos.y;
+				float w = args.clipBox.size.x;
+				float h = args.clipBox.size.y;
+				float xcor = xpos + (w/2.0f) + (w/2.0f) * std::cos(angle);
+				float ycor = ypos + (w/2.0f) + (w/2.0f) * std::sin(angle);
+				
+				nvgBeginPath(args.vg);
+				nvgCircle(args.vg,xcor,ycor,3.0f);
+				//nvgFillColor(args.vg, nvgRGBA(0x00, 0xee, 0x00, 0xff));
+				nvgFillColor(args.vg, colors[i]);
+				//nvgRect(args.vg,args.clipBox.pos.x,args.clipBox.pos.y,args.clipBox.size.x,args.clipBox.size.y);
+				nvgFill(args.vg);
+			}
+			
 			nvgRestore(args.vg);
 		}
         
