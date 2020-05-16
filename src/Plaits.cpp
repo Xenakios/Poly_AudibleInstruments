@@ -72,6 +72,8 @@ struct Plaits : Module {
 	dsp::SchmittTrigger model1Trigger;
 	dsp::SchmittTrigger model2Trigger;
 
+	float modulatedParamValues[NUM_PARAMS];
+
 	Plaits() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(MODEL1_PARAM, 0.0, 1.0, 0.0, "Model selection 1");
@@ -99,6 +101,8 @@ struct Plaits : Module {
 			voice[i].Init(&allocator);
 		}
 		onReset();
+		for (int i=0;i<NUM_PARAMS;++i)
+			modulatedParamValues[i]=0.0f;
 	}
 
 	void onReset() override {
@@ -146,6 +150,18 @@ struct Plaits : Module {
 		if (decayJ)
 			for (int i=0;i<MAX_PLAITS_VOICES;++i)
 				patch[i].decay = json_number_value(decayJ);
+	}
+	float getModulatedParamNormalized(int paramid)
+	{
+		if (paramid==FREQ_PARAM)
+			return rescale(voice[0].epars.note,12.0f,104.0f,0.0f,1.0f);
+		if (paramid==HARMONICS_PARAM)
+			return rescale(voice[0].epars.harmonics,0.0f,1.0f,0.0f,1.0f);
+		if (paramid==MORPH_PARAM)
+			return rescale(voice[0].epars.morph,0.0f,1.0f,0.0f,1.0f);
+		if (paramid==TIMBRE_PARAM)
+			return rescale(voice[0].epars.timbre,0.0f,1.0f,0.0f,1.0f);
+		return 0.0f;
 	}
 	inline float getUniSpreadAmount(int numchans, int chan, float spreadpar)
 	{
@@ -302,7 +318,7 @@ struct Plaits : Module {
 				modulations[i].trigger_patched = inputs[TRIGGER_INPUT].isConnected();
 				modulations[i].level_patched = inputs[LEVEL_INPUT].isConnected();
 			}
-
+			modulatedParamValues[FREQ_PARAM] = modulations[0].note+patch[0].note;
 
 			// Render frames
 			for (int polych=0;polych<numpolychs;++polych)
@@ -384,6 +400,34 @@ struct Rogan0PSWhite : Rogan {
 	}
 };
 
+class MyRogan : public Rogan3PSWhite
+{
+public:
+	void draw(const DrawArgs& args) override
+    {
+        Rogan3PSWhite::draw(args);
+        auto modul = dynamic_cast<Plaits*>(paramQuantity->module);
+		float modulated = modul->getModulatedParamNormalized(paramQuantity->paramId);
+		float angle = rescale(modulated,0.0f,1.0f,minAngle,maxAngle)-1.5708;
+		float xpos = args.clipBox.pos.x;
+		float ypos = args.clipBox.pos.y;
+		float w = args.clipBox.size.x;
+		float h = args.clipBox.size.y;
+		float xcor = xpos + (w/2.0f) + (w/2.0f) * std::cos(angle);
+		float ycor = ypos + (w/2.0f) + (w/2.0f) * std::sin(angle);
+		nvgSave(args.vg);
+        nvgBeginPath(args.vg);
+        nvgCircle(args.vg,xcor,ycor,3.0f);
+        nvgFillColor(args.vg, nvgRGBA(0x00, 0xee, 0x00, 0xff));
+        //nvgRect(args.vg,args.clipBox.pos.x,args.clipBox.pos.y,args.clipBox.size.x,args.clipBox.size.y);
+		nvgFill(args.vg);
+        nvgRestore(args.vg);
+    }
+
+		
+private:
+
+};
 
 struct PlaitsWidget : ModuleWidget {
 	PlaitsWidget(Plaits *module) {
@@ -397,10 +441,14 @@ struct PlaitsWidget : ModuleWidget {
 
 		addParam(createParam<TL1105>(mm2px(Vec(23.32685, 14.6539)), module, Plaits::MODEL1_PARAM));
 		addParam(createParam<TL1105>(mm2px(Vec(32.22764, 14.6539)), module, Plaits::MODEL2_PARAM));
-		addParam(createParam<Rogan3PSWhite>(mm2px(Vec(3.069, 17.984)), module, Plaits::FREQ_PARAM));
-		addParam(createParam<Rogan3PSWhite>(mm2px(Vec(39.333, 17.984)), module, Plaits::HARMONICS_PARAM));
-		addParam(createParam<Rogan1PSWhite>(mm2px(Vec(3.492, 42.673)), module, Plaits::TIMBRE_PARAM));
-		addParam(createParam<Rogan1PSWhite>(mm2px(Vec(43.439, 42.673)), module, Plaits::MORPH_PARAM));
+		
+		addParam(createParam<MyRogan>(mm2px(Vec(3.069, 17.984)), module, Plaits::FREQ_PARAM));
+		addParam(createParam<MyRogan>(mm2px(Vec(39.333, 17.984)), module, Plaits::HARMONICS_PARAM));
+		addParam(createParam<MyRogan>(mm2px(Vec(3.492, 42.673)), module, Plaits::TIMBRE_PARAM));
+		addParam(createParam<MyRogan>(mm2px(Vec(43.439, 42.673)), module, Plaits::MORPH_PARAM));
+		//addParam(createParam<Rogan1PSWhite>(mm2px(Vec(3.492, 42.673)), module, Plaits::TIMBRE_PARAM));
+		//addParam(createParam<Rogan1PSWhite>(mm2px(Vec(43.439, 42.673)), module, Plaits::MORPH_PARAM));
+		
 		addParam(createParam<Trimpot>(mm2px(Vec(7.782, 79.878)), module, Plaits::TIMBRE_CV_PARAM));
 		addParam(createParam<Trimpot>(mm2px(Vec(27.330, 83.374)), module, Plaits::FREQ_CV_PARAM));
 		addParam(createParam<Trimpot>(mm2px(Vec(46.515, 79.878)), module, Plaits::MORPH_CV_PARAM));

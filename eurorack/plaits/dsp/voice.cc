@@ -251,6 +251,7 @@ void Voice::Render(
       &frames->aux,
       size,
       2);
+    epars = p;
 }
 
 }  // namespace plaits

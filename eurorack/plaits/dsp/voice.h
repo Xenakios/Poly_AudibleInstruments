@@ -155,7 +155,7 @@ class Voice {
  public:
   Voice() { }
   ~Voice() { }
-
+  EngineParameters epars;
   struct Frame {
     short out;
     short aux;
