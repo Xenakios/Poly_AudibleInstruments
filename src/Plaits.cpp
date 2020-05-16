@@ -397,19 +397,20 @@ struct Rogan0PSWhite : Rogan {
 	}
 };
 
-class MyRogan : public Rogan3PSWhite
+template<typename RoganType>
+class MyRogan : public RoganType
 {
 public:
-	void draw(const DrawArgs& args) override
+	void draw(const typename RoganType::DrawArgs& args) override
     {
-        Rogan3PSWhite::draw(args);
-        if (paramQuantity==nullptr)
+        RoganType::draw(args);
+        if (this->paramQuantity==nullptr)
 			return;
-		auto modul = dynamic_cast<Plaits*>(paramQuantity->module);
+		auto modul = dynamic_cast<Plaits*>(this->paramQuantity->module);
 		if (modul)
 		{
-			float modulated = modul->getModulatedParamNormalized(paramQuantity->paramId);
-			float angle = rescale(modulated,0.0f,1.0f,minAngle,maxAngle)-1.5708;
+			float modulated = modul->getModulatedParamNormalized(this->paramQuantity->paramId);
+			float angle = rescale(modulated,0.0f,1.0f,this->minAngle,this->maxAngle)-1.5708;
 			float xpos = args.clipBox.pos.x;
 			float ypos = args.clipBox.pos.y;
 			float w = args.clipBox.size.x;
@@ -445,10 +446,10 @@ struct PlaitsWidget : ModuleWidget {
 		addParam(createParam<TL1105>(mm2px(Vec(23.32685, 14.6539)), module, Plaits::MODEL1_PARAM));
 		addParam(createParam<TL1105>(mm2px(Vec(32.22764, 14.6539)), module, Plaits::MODEL2_PARAM));
 		
-		addParam(createParam<MyRogan>(mm2px(Vec(3.069, 17.984)), module, Plaits::FREQ_PARAM));
-		addParam(createParam<MyRogan>(mm2px(Vec(39.333, 17.984)), module, Plaits::HARMONICS_PARAM));
-		addParam(createParam<MyRogan>(mm2px(Vec(3.492, 42.673)), module, Plaits::TIMBRE_PARAM));
-		addParam(createParam<MyRogan>(mm2px(Vec(43.439, 42.673)), module, Plaits::MORPH_PARAM));
+		addParam(createParam<MyRogan<Rogan3PSWhite>>(mm2px(Vec(3.069, 17.984)), module, Plaits::FREQ_PARAM));
+		addParam(createParam<MyRogan<Rogan3PSWhite>>(mm2px(Vec(39.333, 17.984)), module, Plaits::HARMONICS_PARAM));
+		addParam(createParam<MyRogan<Rogan1PSWhite>>(mm2px(Vec(3.492, 42.673)), module, Plaits::TIMBRE_PARAM));
+		addParam(createParam<MyRogan<Rogan1PSWhite>>(mm2px(Vec(43.439, 42.673)), module, Plaits::MORPH_PARAM));
 		//addParam(createParam<Rogan1PSWhite>(mm2px(Vec(3.492, 42.673)), module, Plaits::TIMBRE_PARAM));
 		//addParam(createParam<Rogan1PSWhite>(mm2px(Vec(43.439, 42.673)), module, Plaits::MORPH_PARAM));
 		
