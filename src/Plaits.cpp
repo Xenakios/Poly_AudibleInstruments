@@ -72,8 +72,6 @@ struct Plaits : Module {
 	dsp::SchmittTrigger model1Trigger;
 	dsp::SchmittTrigger model2Trigger;
 
-	float modulatedParamValues[NUM_PARAMS];
-
 	Plaits() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(MODEL1_PARAM, 0.0, 1.0, 0.0, "Model selection 1");
@@ -101,8 +99,7 @@ struct Plaits : Module {
 			voice[i].Init(&allocator);
 		}
 		onReset();
-		for (int i=0;i<NUM_PARAMS;++i)
-			modulatedParamValues[i]=0.0f;
+		
 	}
 
 	void onReset() override {
@@ -151,16 +148,16 @@ struct Plaits : Module {
 			for (int i=0;i<MAX_PLAITS_VOICES;++i)
 				patch[i].decay = json_number_value(decayJ);
 	}
-	float getModulatedParamNormalized(int paramid)
+	float getModulatedParamNormalized(int paramid, int whichvoice=0)
 	{
 		if (paramid==FREQ_PARAM)
-			return rescale(voice[0].epars.note,12.0f,104.0f,0.0f,1.0f);
+			return rescale(voice[whichvoice].epars.note,12.0f,104.0f,0.0f,1.0f);
 		if (paramid==HARMONICS_PARAM)
-			return rescale(voice[0].epars.harmonics,0.0f,1.0f,0.0f,1.0f);
+			return voice[whichvoice].epars.harmonics;
 		if (paramid==MORPH_PARAM)
-			return rescale(voice[0].epars.morph,0.0f,1.0f,0.0f,1.0f);
+			return voice[whichvoice].epars.morph;
 		if (paramid==TIMBRE_PARAM)
-			return rescale(voice[0].epars.timbre,0.0f,1.0f,0.0f,1.0f);
+			return voice[whichvoice].epars.timbre;
 		return 0.0f;
 	}
 	inline float getUniSpreadAmount(int numchans, int chan, float spreadpar)
@@ -318,7 +315,7 @@ struct Plaits : Module {
 				modulations[i].trigger_patched = inputs[TRIGGER_INPUT].isConnected();
 				modulations[i].level_patched = inputs[LEVEL_INPUT].isConnected();
 			}
-			modulatedParamValues[FREQ_PARAM] = modulations[0].note+patch[0].note;
+			
 
 			// Render frames
 			for (int polych=0;polych<numpolychs;++polych)
