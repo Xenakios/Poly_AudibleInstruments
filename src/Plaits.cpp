@@ -422,8 +422,9 @@ public:
 			nvgFillColor(args.vg, nvgRGBA(0x00, 0xee, 0x00, 0xff));
 			//nvgRect(args.vg,args.clipBox.pos.x,args.clipBox.pos.y,args.clipBox.size.x,args.clipBox.size.y);
 			nvgFill(args.vg);
+			nvgRestore(args.vg);
 		}
-        nvgRestore(args.vg);
+        
     }
 
 		
