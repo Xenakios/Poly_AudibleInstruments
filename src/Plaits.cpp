@@ -403,21 +403,26 @@ public:
 	void draw(const DrawArgs& args) override
     {
         Rogan3PSWhite::draw(args);
-        auto modul = dynamic_cast<Plaits*>(paramQuantity->module);
-		float modulated = modul->getModulatedParamNormalized(paramQuantity->paramId);
-		float angle = rescale(modulated,0.0f,1.0f,minAngle,maxAngle)-1.5708;
-		float xpos = args.clipBox.pos.x;
-		float ypos = args.clipBox.pos.y;
-		float w = args.clipBox.size.x;
-		float h = args.clipBox.size.y;
-		float xcor = xpos + (w/2.0f) + (w/2.0f) * std::cos(angle);
-		float ycor = ypos + (w/2.0f) + (w/2.0f) * std::sin(angle);
-		nvgSave(args.vg);
-        nvgBeginPath(args.vg);
-        nvgCircle(args.vg,xcor,ycor,3.0f);
-        nvgFillColor(args.vg, nvgRGBA(0x00, 0xee, 0x00, 0xff));
-        //nvgRect(args.vg,args.clipBox.pos.x,args.clipBox.pos.y,args.clipBox.size.x,args.clipBox.size.y);
-		nvgFill(args.vg);
+        if (paramQuantity==nullptr)
+			return;
+		auto modul = dynamic_cast<Plaits*>(paramQuantity->module);
+		if (modul)
+		{
+			float modulated = modul->getModulatedParamNormalized(paramQuantity->paramId);
+			float angle = rescale(modulated,0.0f,1.0f,minAngle,maxAngle)-1.5708;
+			float xpos = args.clipBox.pos.x;
+			float ypos = args.clipBox.pos.y;
+			float w = args.clipBox.size.x;
+			float h = args.clipBox.size.y;
+			float xcor = xpos + (w/2.0f) + (w/2.0f) * std::cos(angle);
+			float ycor = ypos + (w/2.0f) + (w/2.0f) * std::sin(angle);
+			nvgSave(args.vg);
+			nvgBeginPath(args.vg);
+			nvgCircle(args.vg,xcor,ycor,3.0f);
+			nvgFillColor(args.vg, nvgRGBA(0x00, 0xee, 0x00, 0xff));
+			//nvgRect(args.vg,args.clipBox.pos.x,args.clipBox.pos.y,args.clipBox.size.x,args.clipBox.size.y);
+			nvgFill(args.vg);
+		}
         nvgRestore(args.vg);
     }
 
