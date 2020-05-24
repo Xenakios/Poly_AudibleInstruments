@@ -31,6 +31,7 @@ struct Plaits : Module {
 		UNISONOMODE_PARAM,
 		UNISONOSPREAD_PARAM,
 		OUTMIX_CV_PARAM,
+		OUTMIX_LPG_PARAM,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -96,6 +97,7 @@ struct Plaits : Module {
 		configParam(UNISONOMODE_PARAM, 1.0, 16.0, 1.0, "Unisono/Spread num voices");
 		configParam(UNISONOSPREAD_PARAM, 0.0, 1.0, 0.0, "Unisono/Spread");
 		configParam(OUTMIX_CV_PARAM, -1.0, 1.0, 0.0, "Output mix CV");
+		configParam(OUTMIX_LPG_PARAM, -1.0, 1.0, 0.0, "Output mix LPG");
 		for (int i=0;i<MAX_PLAITS_VOICES;++i)
 		{
 			stmlib::BufferAllocator allocator(shared_buffer[i], sizeof(shared_buffer[i]));
@@ -356,6 +358,7 @@ struct Plaits : Module {
 		float outmix = params[OUTMIX_PARAM].getValue();
 		outmix += rescale(inputs[OUTMIX_INPUT].getVoltage()*params[OUTMIX_CV_PARAM].getValue(),
 			-5.0f,5.0f,-1.0f,1.0f);
+		outmix += voice[0].getDecayEnvelopeValue()*params[OUTMIX_LPG_PARAM].getValue();
 		outmix = clamp(outmix,0.0f,1.0f);
 		for (int i=0;i<numpolychs;++i)
 		{
@@ -477,9 +480,11 @@ struct PlaitsWidget : ModuleWidget {
 		addParam(createParam<Trimpot>(mm2px(Vec(46.515, 79.878)), module, Plaits::MORPH_CV_PARAM));
 		
 		addParam(createParam<Trimpot>(mm2px(Vec(2.0, 117.08103)), module, Plaits::HARMONICS_CV_PARAM));
-		addParam(createParam<Trimpot>(mm2px(Vec(10.0, 117.08103)), module, Plaits::HARMONICS_LPG_PARAM));
-		addParam(createParam<Trimpot>(mm2px(Vec(18.0, 117.08103)), module, Plaits::OUTMIX_PARAM));
-		addParam(createParam<Trimpot>(mm2px(Vec(26.0, 117.08103)), module, Plaits::OUTMIX_CV_PARAM));
+		addParam(createParam<Trimpot>(mm2px(Vec(8.5, 117.08103)), module, Plaits::HARMONICS_LPG_PARAM));
+		addParam(createParam<Trimpot>(mm2px(Vec(15.0, 117.08103)), module, Plaits::OUTMIX_PARAM));
+		addParam(createParam<Trimpot>(mm2px(Vec(21.5, 117.08103)), module, Plaits::OUTMIX_LPG_PARAM));
+		addParam(createParam<Trimpot>(mm2px(Vec(28.0, 117.08103)), module, Plaits::OUTMIX_CV_PARAM));
+
 		// 64, 100
 		addParam(createParam<Rogan0PSWhite>(mm2px(Vec(17.556, 73.012)), module, Plaits::LPG_COLOR_PARAM));
 		addInput(createInput<PJ301MPort>(mm2px(Vec(16.528, 80.286)), module, Plaits::LPG_COLOR_INPUT));
