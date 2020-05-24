@@ -30,6 +30,7 @@ struct Plaits : Module {
 		HARMONICS_LPG_PARAM,
 		UNISONOMODE_PARAM,
 		UNISONOSPREAD_PARAM,
+		OUTMIX_CV_PARAM,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -44,6 +45,7 @@ struct Plaits : Module {
 		LPG_COLOR_INPUT,
 		LPG_DECAY_INPUT,
 		SPREAD_INPUT,
+		OUTMIX_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -93,6 +95,7 @@ struct Plaits : Module {
 		configParam(HARMONICS_LPG_PARAM, -1.0, 1.0, 0.0, "LPG to Harmonics");
 		configParam(UNISONOMODE_PARAM, 1.0, 16.0, 1.0, "Unisono/Spread num voices");
 		configParam(UNISONOSPREAD_PARAM, 0.0, 1.0, 0.0, "Unisono/Spread");
+		configParam(OUTMIX_CV_PARAM, -1.0, 1.0, 0.0, "Output mix CV");
 		for (int i=0;i<MAX_PLAITS_VOICES;++i)
 		{
 			stmlib::BufferAllocator allocator(shared_buffer[i], sizeof(shared_buffer[i]));
@@ -351,6 +354,9 @@ struct Plaits : Module {
 		outputs[PITCH_SPREAD_OUTPUT].setChannels(numpolychs);
 		// Set output
 		float outmix = params[OUTMIX_PARAM].getValue();
+		outmix += rescale(inputs[OUTMIX_INPUT].getVoltage()*params[OUTMIX_CV_PARAM].getValue(),
+			-5.0f,5.0f,-1.0f,1.0f);
+		outmix = clamp(outmix,0.0f,1.0f);
 		for (int i=0;i<numpolychs;++i)
 		{
 			if (!outputBuffer[i].empty()) {
@@ -469,8 +475,11 @@ struct PlaitsWidget : ModuleWidget {
 		addParam(createParam<Trimpot>(mm2px(Vec(7.782, 79.878)), module, Plaits::TIMBRE_CV_PARAM));
 		addParam(createParam<Trimpot>(mm2px(Vec(27.330, 83.374)), module, Plaits::FREQ_CV_PARAM));
 		addParam(createParam<Trimpot>(mm2px(Vec(46.515, 79.878)), module, Plaits::MORPH_CV_PARAM));
-		addParam(createParam<Trimpot>(mm2px(Vec(19.131, 117.08103)), module, Plaits::HARMONICS_CV_PARAM));
-		addParam(createParam<Trimpot>(mm2px(Vec(9.131, 117.08103)), module, Plaits::HARMONICS_LPG_PARAM));
+		
+		addParam(createParam<Trimpot>(mm2px(Vec(2.0, 117.08103)), module, Plaits::HARMONICS_CV_PARAM));
+		addParam(createParam<Trimpot>(mm2px(Vec(10.0, 117.08103)), module, Plaits::HARMONICS_LPG_PARAM));
+		addParam(createParam<Trimpot>(mm2px(Vec(18.0, 117.08103)), module, Plaits::OUTMIX_PARAM));
+		addParam(createParam<Trimpot>(mm2px(Vec(26.0, 117.08103)), module, Plaits::OUTMIX_CV_PARAM));
 		// 64, 100
 		addParam(createParam<Rogan0PSWhite>(mm2px(Vec(17.556, 73.012)), module, Plaits::LPG_COLOR_PARAM));
 		addInput(createInput<PJ301MPort>(mm2px(Vec(16.528, 80.286)), module, Plaits::LPG_COLOR_INPUT));
@@ -492,9 +501,11 @@ struct PlaitsWidget : ModuleWidget {
 
 		addOutput(createOutput<PJ301MPort>(mm2px(Vec(37.65257, 107.08103)), module, Plaits::OUT_OUTPUT));
 		addOutput(createOutput<PJ301MPort>(mm2px(Vec(49.0986, 107.08103)), module, Plaits::AUX_OUTPUT));
-		addOutput(createOutput<PJ301MPort>(mm2px(Vec(37.65257, 117.08103)), module, Plaits::AUX2_OUTPUT));
-		addOutput(createOutput<PJ301MPort>(mm2px(Vec(49.0986, 117.08103)), module, Plaits::PITCH_SPREAD_OUTPUT));
-		addParam(createParam<Trimpot>(mm2px(Vec(29.131, 117.08103)), module, Plaits::OUTMIX_PARAM));
+		
+		addInput(createInput<PJ301MPort>(mm2px(Vec(34.0, 117.08103)), module, Plaits::OUTMIX_INPUT));
+		addOutput(createOutput<PJ301MPort>(mm2px(Vec(42.0, 117.08103)), module, Plaits::AUX2_OUTPUT));
+		addOutput(createOutput<PJ301MPort>(mm2px(Vec(50.0, 117.08103)), module, Plaits::PITCH_SPREAD_OUTPUT));
+		
 
 		addParam(createParam<Trimpot>(mm2px(Vec(18.0, 6.0)), module, Plaits::UNISONOMODE_PARAM));
 		addParam(createParam<Trimpot>(mm2px(Vec(26.0, 6.0)), module, Plaits::UNISONOSPREAD_PARAM));
