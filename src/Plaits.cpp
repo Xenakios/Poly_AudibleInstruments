@@ -600,7 +600,8 @@ struct PlaitsWidget : ModuleWidget {
 		addInput(createInputCentered<MyPort1>(Vec(135, 44), module, Plaits::TRIGGER_INPUT));
 		addInput(createInputCentered<MyPort1>(Vec(88, 44), module, Plaits::NOTE_INPUT));
 		addInput(createInputCentered<MyPort1>(Vec(252,255), module, Plaits::FREQ_INPUT));
-		
+		addInput(createInputCentered<MyPort1>(Vec(183,44), module, Plaits::LEVEL_INPUT));
+
 		addInput(createInputCentered<MyPort1>(Vec(18,255), module, Plaits::HARMONICS_INPUT));
 		addParam(createParamCentered<MyKnob2>(Vec(18,233), module, Plaits::HARMONICS_CV_PARAM));
 		addInput(createInputCentered<MyPort1>(Vec(252,148), module, Plaits::MORPH_INPUT));
@@ -611,6 +612,14 @@ struct PlaitsWidget : ModuleWidget {
 		addParam(createParamCentered<MyKnob2>(Vec(252,233), module, Plaits::FREQ_CV_PARAM));
 		addParam(createParamCentered<MyKnob2>(Vec(71,300), module, Plaits::LPG_COLOR_PARAM));
 		addParam(createParamCentered<MyKnob2>(Vec(199.5,300), module, Plaits::LPG_DECAY_PARAM));
+
+		addParam(createParamCentered<MyKnob2>(Vec(40,44), module, Plaits::UNISONOMODE_PARAM));
+		addParam(createParamCentered<MyKnob2>(Vec(230,44), module, Plaits::UNISONOSPREAD_PARAM));
+		
+		addParam(createParamCentered<MyKnob2>(Vec(18,206), module, Plaits::HARMONICS_LPG_PARAM));
+		addParam(createParamCentered<MyKnob2>(Vec(18,175), module, Plaits::TIMBRE_LPG_PARAM));
+		addParam(createParamCentered<MyKnob2>(Vec(252,175), module, Plaits::MORPH_LPG_PARAM));
+
 
 		addParam(createParamCentered<MyButton1>(Vec(77.5, 98.5), module, Plaits::MODEL1_PARAM));
 		addParam(createParamCentered<MyButton1>(Vec(192.5, 98.5), module, Plaits::MODEL2_PARAM));
