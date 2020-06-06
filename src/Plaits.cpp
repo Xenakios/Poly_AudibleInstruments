@@ -406,6 +406,29 @@ struct Rogan0PSWhite : Rogan {
 	}
 };
 
+struct MyKnob1 : app::SvgKnob {
+	MyKnob1() {
+		minAngle = -0.83 * M_PI;
+		maxAngle = 0.83 * M_PI;
+		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_knobL.svg")));
+	}
+};
+
+struct MyKnob2 : app::SvgKnob {
+	MyKnob2() {
+		minAngle = -0.83 * M_PI;
+		maxAngle = 0.83 * M_PI;
+		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_knobS.svg")));
+	}
+};
+
+struct MyPort1 : app::SvgPort {
+	MyPort1() {
+		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance,"res/plaits/newtable_jack.svg")));
+	}
+};
+
+
 template<typename RoganType>
 class MyRogan : public RoganType
 {
@@ -456,10 +479,41 @@ private:
 };
 
 struct PlaitsWidget : ModuleWidget {
+	void step() override
+	{
+		ModuleWidget::step();
+		auto plaits = dynamic_cast<Plaits*>(module);
+		if (plaits)
+		{
+			if (plaits->patch->engine!=curSubPanel)
+			{
+				curSubPanel = plaits->patch->engine;
+				if (subPanels[curSubPanel]!=nullptr)
+				{
+					swgWidget->show();	
+					swgWidget->setSvg(subPanels[curSubPanel]);
+				}
+				else 
+				{
+					swgWidget->hide();
+				}
+			}
+		}
+	}
 	PlaitsWidget(Plaits *module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Plaits2.svg")));
-
+		//setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Plaits2.svg")));
+		// 
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaitsBG.svg")));
+		for (int i=0;i<16;++i)
+			subPanels[i]=nullptr;
+		subPanels[0] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits01.svg"));
+		swgWidget = new SvgWidget;
+		swgWidget->setSvg(subPanels[0]);
+		addChild(swgWidget);
+		swgWidget->box.pos = {0,0};
+		swgWidget->box.size = this->box.size;
+#ifdef OLD_PLAITS_PANEL
 		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
 		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
 		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
@@ -524,6 +578,19 @@ struct PlaitsWidget : ModuleWidget {
 		addChild(createLight<MediumLight<GreenRedLight>>(mm2px(Vec(28.79498, 50.31785)), module, Plaits::MODEL_LIGHT + 5 * 2));
 		addChild(createLight<MediumLight<GreenRedLight>>(mm2px(Vec(28.79498, 55.71771)), module, Plaits::MODEL_LIGHT + 6 * 2));
 		addChild(createLight<MediumLight<GreenRedLight>>(mm2px(Vec(28.79498, 61.11827)), module, Plaits::MODEL_LIGHT + 7 * 2));
+#else
+		addParam(createParamCentered<MyKnob1>(Vec(71, 235.5), module, Plaits::FREQ_PARAM));
+		addParam(createParamCentered<MyKnob1>(Vec(135,198.5), module, Plaits::HARMONICS_PARAM));
+		addParam(createParamCentered<MyKnob1>(Vec(83.5,145.5), module, Plaits::TIMBRE_PARAM));
+		addParam(createParamCentered<MyKnob1>(Vec(186.5,145.5), module, Plaits::MORPH_PARAM));
+		addParam(createParamCentered<MyKnob1>(Vec(135,283.5), module, Plaits::OUTMIX_PARAM));
+		addParam(createParamCentered<MyKnob1>(Vec(135,283.5), module, Plaits::OUTMIX_PARAM));
+		addOutput(createOutputCentered<MyPort1>(Vec(135, 351), module, Plaits::AUX2_OUTPUT));
+		addInput(createInputCentered<MyPort1>(Vec(135, 44), module, Plaits::TRIGGER_INPUT));
+		addInput(createInputCentered<MyPort1>(Vec(88, 44), module, Plaits::NOTE_INPUT));
+		addInput(createInputCentered<MyPort1>(Vec(252,255), module, Plaits::FREQ_INPUT));
+		addParam(createParamCentered<MyKnob2>(Vec(252,233), module, Plaits::FREQ_CV_PARAM));
+#endif
 	}
 
 	void appendContextMenu(Menu *menu) override {
@@ -569,6 +636,10 @@ struct PlaitsWidget : ModuleWidget {
 			menu->addChild(modelItem);
 		}
 	}
+	
+	std::shared_ptr<SVG> subPanels[16];
+	int curSubPanel = 0;
+	SvgWidget* swgWidget = nullptr;
 };
 
 
