@@ -428,6 +428,13 @@ struct MyPort1 : app::SvgPort {
 	}
 };
 
+struct MyButton1 : app::SvgSwitch {
+	MyButton1() {
+		momentary = true;
+		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance,"res/plaits/newtable_push.svg")));
+		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance,"res/plaits/newtable_pushed.svg")));
+	}
+};
 
 template<typename RoganType>
 class MyRogan : public RoganType
@@ -585,11 +592,28 @@ struct PlaitsWidget : ModuleWidget {
 		addParam(createParamCentered<MyKnob1>(Vec(186.5,145.5), module, Plaits::MORPH_PARAM));
 		addParam(createParamCentered<MyKnob1>(Vec(135,283.5), module, Plaits::OUTMIX_PARAM));
 		addParam(createParamCentered<MyKnob1>(Vec(135,283.5), module, Plaits::OUTMIX_PARAM));
+		
 		addOutput(createOutputCentered<MyPort1>(Vec(135, 351), module, Plaits::AUX2_OUTPUT));
+		addOutput(createOutputCentered<MyPort1>(Vec(71,351), module, Plaits::OUT_OUTPUT));
+		addOutput(createOutputCentered<MyPort1>(Vec(199.5,351), module, Plaits::AUX_OUTPUT));
+
 		addInput(createInputCentered<MyPort1>(Vec(135, 44), module, Plaits::TRIGGER_INPUT));
 		addInput(createInputCentered<MyPort1>(Vec(88, 44), module, Plaits::NOTE_INPUT));
 		addInput(createInputCentered<MyPort1>(Vec(252,255), module, Plaits::FREQ_INPUT));
+		
+		addInput(createInputCentered<MyPort1>(Vec(18,255), module, Plaits::HARMONICS_INPUT));
+		addParam(createParamCentered<MyKnob2>(Vec(18,233), module, Plaits::HARMONICS_CV_PARAM));
+		addInput(createInputCentered<MyPort1>(Vec(252,148), module, Plaits::MORPH_INPUT));
+		addParam(createParamCentered<MyKnob2>(Vec(252,126), module, Plaits::MORPH_CV_PARAM));
+		addInput(createInputCentered<MyPort1>(Vec(18,148), module, Plaits::TIMBRE_INPUT));
+		addParam(createParamCentered<MyKnob2>(Vec(18,126), module, Plaits::TIMBRE_CV_PARAM));
+
 		addParam(createParamCentered<MyKnob2>(Vec(252,233), module, Plaits::FREQ_CV_PARAM));
+		addParam(createParamCentered<MyKnob2>(Vec(71,300), module, Plaits::LPG_COLOR_PARAM));
+		addParam(createParamCentered<MyKnob2>(Vec(199.5,300), module, Plaits::LPG_DECAY_PARAM));
+
+		addParam(createParamCentered<MyButton1>(Vec(77.5, 98.5), module, Plaits::MODEL1_PARAM));
+		addParam(createParamCentered<MyButton1>(Vec(192.5, 98.5), module, Plaits::MODEL2_PARAM));
 #endif
 	}
 
