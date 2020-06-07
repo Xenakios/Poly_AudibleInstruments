@@ -32,6 +32,8 @@ struct Plaits : Module {
 		UNISONOSPREAD_PARAM,
 		OUTMIX_CV_PARAM,
 		OUTMIX_LPG_PARAM,
+		DECAY_CV_PARAM,
+		LPG_COLOR_CV_PARAM,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -98,6 +100,8 @@ struct Plaits : Module {
 		configParam(UNISONOSPREAD_PARAM, 0.0, 1.0, 0.0, "Unisono/Spread");
 		configParam(OUTMIX_CV_PARAM, -1.0, 1.0, 0.0, "Output mix CV");
 		configParam(OUTMIX_LPG_PARAM, -1.0, 1.0, 0.0, "Output mix LPG");
+		configParam(DECAY_CV_PARAM, -1.0, 1.0, 0.0, "Decay CV");
+		configParam(LPG_COLOR_CV_PARAM, -1.0, 1.0, 0.0, "LPG Colour CV");
 		for (int i=0;i<MAX_PLAITS_VOICES;++i)
 		{
 			stmlib::BufferAllocator allocator(shared_buffer[i], sizeof(shared_buffer[i]));
@@ -261,13 +265,13 @@ struct Plaits : Module {
 				//else {
 					float lpg_colour = params[LPG_COLOR_PARAM].getValue();
 					if (inputs[LPG_COLOR_INPUT].getChannels() < 2)
-						lpg_colour += inputs[LPG_COLOR_INPUT].getVoltage()/10.0f;
-					else lpg_colour += inputs[LPG_COLOR_INPUT].getVoltage(i)/10.0f;
+						lpg_colour += inputs[LPG_COLOR_INPUT].getVoltage()/10.0f*params[LPG_COLOR_CV_PARAM].getValue();
+					else lpg_colour += inputs[LPG_COLOR_INPUT].getVoltage(i)/10.0f*params[LPG_COLOR_CV_PARAM].getValue();
 					patch[i].lpg_colour = clamp(lpg_colour,0.0f,1.0f);
 					float decay = params[LPG_DECAY_PARAM].getValue();
 					if (inputs[LPG_DECAY_INPUT].getChannels() < 2)
-						decay += inputs[LPG_DECAY_INPUT].getVoltage()/10.0f;
-					else decay += inputs[LPG_DECAY_INPUT].getVoltage(i)/10.0f;
+						decay += inputs[LPG_DECAY_INPUT].getVoltage()/10.0f*params[DECAY_CV_PARAM].getValue();
+					else decay += inputs[LPG_DECAY_INPUT].getVoltage(i)/10.0f*params[DECAY_CV_PARAM].getValue();
 					patch[i].decay = clamp(decay,0.0f,1.0);
 				//}
 				patch[i].frequency_cv_amount = params[FREQ_CV_PARAM].getValue();
@@ -620,6 +624,10 @@ struct PlaitsWidget : ModuleWidget {
 		addParam(createParamCentered<MyKnob2>(Vec(18,175), module, Plaits::TIMBRE_LPG_PARAM));
 		addParam(createParamCentered<MyKnob2>(Vec(252,175), module, Plaits::MORPH_LPG_PARAM));
 
+		addParam(createParamCentered<MyKnob2>(Vec(252,333), module, Plaits::DECAY_CV_PARAM));
+		addInput(createInputCentered<MyPort1>(Vec(252,355), module, Plaits::LPG_DECAY_INPUT));
+		addParam(createParamCentered<MyKnob2>(Vec(18,333), module, Plaits::LPG_COLOR_CV_PARAM));
+		addInput(createInputCentered<MyPort1>(Vec(18,355), module, Plaits::LPG_COLOR_INPUT));
 
 		addParam(createParamCentered<MyButton1>(Vec(77.5, 98.5), module, Plaits::MODEL1_PARAM));
 		addParam(createParamCentered<MyButton1>(Vec(192.5, 98.5), module, Plaits::MODEL2_PARAM));
