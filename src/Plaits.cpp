@@ -34,6 +34,8 @@ struct Plaits : Module {
 		OUTMIX_LPG_PARAM,
 		DECAY_CV_PARAM,
 		LPG_COLOR_CV_PARAM,
+		ENGINE_CV_PARAM,
+		UNISONOSPREAD_CV_PARAM,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -102,6 +104,8 @@ struct Plaits : Module {
 		configParam(OUTMIX_LPG_PARAM, -1.0, 1.0, 0.0, "Output mix LPG");
 		configParam(DECAY_CV_PARAM, -1.0, 1.0, 0.0, "Decay CV");
 		configParam(LPG_COLOR_CV_PARAM, -1.0, 1.0, 0.0, "LPG Colour CV");
+		configParam(ENGINE_CV_PARAM, -1.0, 1.0, 0.0, "Engine choice CV");
+		configParam(UNISONOSPREAD_CV_PARAM, -1.0, 1.0, 0.0, "Unisono/Spread CV");
 		for (int i=0;i<MAX_PLAITS_VOICES;++i)
 		{
 			stmlib::BufferAllocator allocator(shared_buffer[i], sizeof(shared_buffer[i]));
@@ -200,7 +204,7 @@ struct Plaits : Module {
 		float spreadamt = params[UNISONOSPREAD_PARAM].getValue();
 		if (inputs[SPREAD_INPUT].isConnected())
 		{
-			spreadamt += rescale(inputs[SPREAD_INPUT].getVoltage(),-5.0f,5.0f,-1.0f,1.0f);
+			spreadamt += rescale(inputs[SPREAD_INPUT].getVoltage()*params[UNISONOSPREAD_CV_PARAM].getValue(),-5.0f,5.0f,-1.0f,1.0f);
 			spreadamt = clamp(spreadamt,0.0f,1.0f);
 		}
 		int numpolychs = std::max(inputs[NOTE_INPUT].getChannels(),1);
@@ -284,9 +288,9 @@ struct Plaits : Module {
 				patch[i].harmonics_lpg_amount = params[HARMONICS_LPG_PARAM].getValue();
 				// Update modulations
 				if (inputs[ENGINE_INPUT].getChannels() < 2)
-					modulations[i].engine = inputs[ENGINE_INPUT].getVoltage() / 5.f;
+					modulations[i].engine = inputs[ENGINE_INPUT].getVoltage() / 5.f * params[ENGINE_CV_PARAM].getValue();
 				else
-					modulations[i].engine = inputs[ENGINE_INPUT].getVoltage(i) / 5.f;
+					modulations[i].engine = inputs[ENGINE_INPUT].getVoltage(i) / 5.f * params[ENGINE_CV_PARAM].getValue();
 				if (unispreadchans<2)
 					modulations[i].note = inputs[NOTE_INPUT].getVoltage(i) * 12.f;
 				else
@@ -631,6 +635,19 @@ struct PlaitsWidget : ModuleWidget {
 
 		addParam(createParamCentered<MyButton1>(Vec(77.5, 98.5), module, Plaits::MODEL1_PARAM));
 		addParam(createParamCentered<MyButton1>(Vec(192.5, 98.5), module, Plaits::MODEL2_PARAM));
+
+		addParam(createParamCentered<MyKnob2>(Vec(18,76), module, Plaits::ENGINE_CV_PARAM));
+		addInput(createInputCentered<MyPort1>(Vec(18,98), module, Plaits::ENGINE_INPUT));
+
+		addParam(createParamCentered<MyKnob2>(Vec(252,283), module, Plaits::OUTMIX_CV_PARAM));
+		addInput(createInputCentered<MyPort1>(Vec(252,305), module, Plaits::OUTMIX_INPUT));
+
+		addParam(createParamCentered<MyKnob2>(Vec(18,283), module, Plaits::OUTMIX_LPG_PARAM));
+
+		addParam(createParamCentered<MyKnob2>(Vec(252,206), module, Plaits::FREQ_LPG_PARAM));
+
+		addParam(createParamCentered<MyKnob2>(Vec(252,76), module, Plaits::UNISONOSPREAD_CV_PARAM));
+		addInput(createInputCentered<MyPort1>(Vec(252,98), module, Plaits::SPREAD_INPUT));
 #endif
 	}
 
