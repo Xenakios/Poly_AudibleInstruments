@@ -75,7 +75,7 @@ struct Plaits : Module {
 	dsp::SampleRateConverter<2> outputSrc[MAX_PLAITS_VOICES];
 	dsp::DoubleRingBuffer<dsp::Frame<2>, 256> outputBuffer[MAX_PLAITS_VOICES];
 	bool lowCpu = false;
-	bool lpg = false;
+	bool freeTune = false;
 
 	dsp::SchmittTrigger model1Trigger;
 	dsp::SchmittTrigger model2Trigger;
@@ -251,9 +251,11 @@ struct Plaits : Module {
 				lights[MODEL_LIGHT + 2*i + 0].setBrightness((activeEngine == i) ? 1.f : (patch[0].engine == i) ? tri : 0.f);
 				lights[MODEL_LIGHT + 2*i + 1].setBrightness((activeEngine == i + 8) ? 1.f : (patch[0].engine == i + 8) ? tri : 0.f);
 			}
-
+			float pitch;
+			if (!freeTune)
+				pitch = std::round(params[FREQ_PARAM].getValue());
+			else pitch = params[FREQ_PARAM].getValue();
 			// Calculate pitch for lowCpu mode if needed
-			float pitch = std::round(params[FREQ_PARAM].getValue());
 			if (lowCpu)
 				pitch += log2f(48000.f * args.sampleTime);
 			// Update patch
@@ -665,12 +667,13 @@ struct PlaitsWidget : ModuleWidget {
 			}
 		};
 
-		struct PlaitsLPGItem : MenuItem {
+		struct PlaitsFreeTuneItem : MenuItem {
 			Plaits *module;
 			void onAction(const event::Action &e) override {
-				module->lpg ^= true;
+				module->freeTune ^= true;
 			}
 		};
+		
 
 		struct PlaitsModelItem : MenuItem {
 			Plaits *module;
@@ -685,9 +688,9 @@ struct PlaitsWidget : ModuleWidget {
 		PlaitsLowCpuItem *lowCpuItem = createMenuItem<PlaitsLowCpuItem>("Low CPU", CHECKMARK(module->lowCpu));
 		lowCpuItem->module = module;
 		menu->addChild(lowCpuItem);
-		PlaitsLPGItem *lpgItem = createMenuItem<PlaitsLPGItem>("Edit LPG response/decay", CHECKMARK(module->lpg));
-		lpgItem->module = module;
-		menu->addChild(lpgItem);
+		PlaitsFreeTuneItem *freeTuneItem = createMenuItem<PlaitsFreeTuneItem>("Octave knob free tune", CHECKMARK(module->freeTune));
+		freeTuneItem->module = module;
+		menu->addChild(freeTuneItem);
 
 		menu->addChild(new MenuEntry());
 		menu->addChild(createMenuLabel("Models"));
