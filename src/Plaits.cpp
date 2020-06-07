@@ -36,6 +36,7 @@ struct Plaits : Module {
 		LPG_COLOR_CV_PARAM,
 		ENGINE_CV_PARAM,
 		UNISONOSPREAD_CV_PARAM,
+		SECONDARY_FREQ_PARAM,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -106,6 +107,7 @@ struct Plaits : Module {
 		configParam(LPG_COLOR_CV_PARAM, -1.0, 1.0, 0.0, "LPG Colour CV");
 		configParam(ENGINE_CV_PARAM, -1.0, 1.0, 0.0, "Engine choice CV");
 		configParam(UNISONOSPREAD_CV_PARAM, -1.0, 1.0, 0.0, "Unisono/Spread CV");
+		configParam(SECONDARY_FREQ_PARAM, -7.0, 7.0, 0.0, "Tuning");
 		for (int i=0;i<MAX_PLAITS_VOICES;++i)
 		{
 			stmlib::BufferAllocator allocator(shared_buffer[i], sizeof(shared_buffer[i]));
@@ -213,7 +215,7 @@ struct Plaits : Module {
 			numpolychs = unispreadchans;
 		if (outputBuffer[0].empty()) {
 			const int blockSize = 12;
-
+			float pitchAdjust = params[SECONDARY_FREQ_PARAM].getValue();
 			// Model buttons
 			if (model1Trigger.process(params[MODEL1_PARAM].getValue())) {
 				for (int i=0;i<MAX_PLAITS_VOICES;++i)
@@ -251,14 +253,14 @@ struct Plaits : Module {
 			}
 
 			// Calculate pitch for lowCpu mode if needed
-			float pitch = params[FREQ_PARAM].getValue();
+			float pitch = std::round(params[FREQ_PARAM].getValue());
 			if (lowCpu)
 				pitch += log2f(48000.f * args.sampleTime);
 			// Update patch
 			
 			for (int i=0;i<numpolychs;++i)
 			{
-				patch[i].note = 60.f + pitch * 12.f;
+				patch[i].note = 60.f + pitch * 12.f + pitchAdjust;
 				if (unispreadchans>1)
 					patch[i].note+=getUniSpreadAmount(unispreadchans,i,spreadamt);
 				patch[i].harmonics = params[HARMONICS_PARAM].getValue();
@@ -416,8 +418,8 @@ struct Rogan0PSWhite : Rogan {
 
 struct MyKnob1 : app::SvgKnob {
 	MyKnob1() {
-		minAngle = -0.83 * M_PI;
-		maxAngle = 0.83 * M_PI;
+		minAngle = -0.78 * M_PI;
+		maxAngle = 0.78 * M_PI;
 		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_knobL.svg")));
 	}
 };
@@ -595,6 +597,7 @@ struct PlaitsWidget : ModuleWidget {
 		addChild(createLight<MediumLight<GreenRedLight>>(mm2px(Vec(28.79498, 61.11827)), module, Plaits::MODEL_LIGHT + 7 * 2));
 #else
 		addParam(createParamCentered<MyKnob1>(Vec(71, 235.5), module, Plaits::FREQ_PARAM));
+		addParam(createParamCentered<MyKnob1>(Vec(199,235.5), module, Plaits::SECONDARY_FREQ_PARAM));
 		addParam(createParamCentered<MyKnob1>(Vec(135,198.5), module, Plaits::HARMONICS_PARAM));
 		addParam(createParamCentered<MyKnob1>(Vec(83.5,145.5), module, Plaits::TIMBRE_PARAM));
 		addParam(createParamCentered<MyKnob1>(Vec(186.5,145.5), module, Plaits::MORPH_PARAM));
@@ -607,6 +610,7 @@ struct PlaitsWidget : ModuleWidget {
 
 		addInput(createInputCentered<MyPort1>(Vec(135, 44), module, Plaits::TRIGGER_INPUT));
 		addInput(createInputCentered<MyPort1>(Vec(88, 44), module, Plaits::NOTE_INPUT));
+
 		addInput(createInputCentered<MyPort1>(Vec(252,255), module, Plaits::FREQ_INPUT));
 		addInput(createInputCentered<MyPort1>(Vec(183,44), module, Plaits::LEVEL_INPUT));
 
