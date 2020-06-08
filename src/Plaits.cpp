@@ -530,17 +530,7 @@ struct Model_LEDWidget : public TransparentWidget
 		NVGRestorer nr(args.vg);
 		static const NVGcolor inactive = nvgRGBA(0x00,0x00,0x00,0xff);
 		static const NVGcolor active = nvgRGBA(0x84,0x84,0x84,0xff);
-		static const float positions[8][2]=
-		{
-			{96.5,102.5},
-			{103.5,	90.5},
-			{113.5,	81.5},
-			{127.5,	75.5},
-			{142.5,	75.5},
-			{156.5,	81.5},
-			{166.5,	90.5},
-			{173.5,	102.5}
-		};
+		
 		for (int i=0;i<8;++i)
 		{
 			nvgBeginPath(args.vg);
@@ -552,7 +542,32 @@ struct Model_LEDWidget : public TransparentWidget
 			nvgFill(args.vg);
 		}
 	}
+	void onButton(const event::Button& e) override
+	{
+		int engineBank = mPlaits->patch[0].engine / 8;
+		for (int i=0;i<8;++i)
+		{
+			Rect r{positions[i][0]-3.5f,positions[i][1]-3.5f,7.0f,7.0f};
+			if (r.contains(e.pos))
+			{
+				for (int j=0;j<MAX_PLAITS_VOICES;++j)
+					mPlaits->patch[j].engine = (engineBank*8)+i;
+				break;
+			}
+		}
+	}
 	Plaits* mPlaits = nullptr;
+	const float positions[8][2]=
+		{
+			{96.5,102.5},
+			{103.5,	90.5},
+			{113.5,	81.5},
+			{127.5,	75.5},
+			{142.5,	75.5},
+			{156.5,	81.5},
+			{166.5,	90.5},
+			{173.5,	102.5}
+		};
 };
 
 struct PlaitsWidget : ModuleWidget {
