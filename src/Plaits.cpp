@@ -80,6 +80,8 @@ struct Plaits : Module {
 	dsp::SchmittTrigger model1Trigger;
 	dsp::SchmittTrigger model2Trigger;
 
+	float currentOutmix = 0.0f;
+
 	Plaits() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(MODEL1_PARAM, 0.0, 1.0, 0.0, "Model selection 1");
@@ -166,14 +168,16 @@ struct Plaits : Module {
 	float getModulatedParamNormalized(int paramid, int whichvoice=0)
 	{
 		if (paramid==FREQ_PARAM)
-			return rescale(voice[whichvoice].epars.note,12.0f,104.0f,0.0f,1.0f);
+			return rescale(voice[whichvoice].epars.note,12.0f,108.0f,0.0f,1.0f);
 		if (paramid==HARMONICS_PARAM)
 			return voice[whichvoice].epars.harmonics;
 		if (paramid==MORPH_PARAM)
 			return voice[whichvoice].epars.morph;
 		if (paramid==TIMBRE_PARAM)
 			return voice[whichvoice].epars.timbre;
-		return 0.0f;
+		if (paramid==OUTMIX_PARAM)
+			return currentOutmix;
+		return -1.0f;
 	}
 	inline float getUniSpreadAmount(int numchans, int chan, float spreadpar)
 	{
@@ -372,6 +376,7 @@ struct Plaits : Module {
 			-5.0f,5.0f,-1.0f,1.0f);
 		outmix += voice[0].getDecayEnvelopeValue()*params[OUTMIX_LPG_PARAM].getValue();
 		outmix = clamp(outmix,0.0f,1.0f);
+		currentOutmix = outmix;
 		for (int i=0;i<numpolychs;++i)
 		{
 			if (!outputBuffer[i].empty()) {
@@ -424,6 +429,56 @@ struct MyKnob1 : app::SvgKnob {
 		maxAngle = 0.78 * M_PI;
 		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_knobL.svg")));
 	}
+	void draw(const DrawArgs& args) override
+    {
+        app::SvgKnob::draw(args);
+        if (this->paramQuantity==nullptr)
+			return;
+		auto modul = dynamic_cast<Plaits*>(this->paramQuantity->module);
+		if (modul)
+		{
+			static const NVGcolor colors[4]=
+			{
+				nvgRGBA(0x00, 0xee, 0x00, 0xff),
+				nvgRGBA(0xee, 0x00, 0x00, 0xff),
+				nvgRGBA(0x00, 0x00, 0xee, 0xff),
+				nvgRGBA(0x00, 0xee, 0xee, 0xff),
+			};
+			nvgSave(args.vg);
+			for (int i=0;i<1;++i)
+			{
+				float modulated = modul->getModulatedParamNormalized(this->paramQuantity->paramId,i);
+				if (modulated>=0.0f)
+				{
+					float angle = rescale(modulated,0.0f,1.0f,this->minAngle,this->maxAngle)-1.5708;
+					//nvgRotate(args.vg,angle);
+					float xpos = args.clipBox.pos.x;
+					float ypos = args.clipBox.pos.y;
+					float w = args.clipBox.size.x;
+					float h = args.clipBox.size.y;
+					float xcor0 = xpos + (w / 2.0f) + 10.0f * std::cos(angle);
+					float ycor0 = ypos + (w / 2.0f) + 10.0f * std::sin(angle);
+					float xcor1 = xpos + (w / 2.0f) + 15.0f * std::cos(angle);
+					float ycor1 = ypos + (w / 2.0f) + 15.0f * std::sin(angle);
+					nvgBeginPath(args.vg);
+					nvgStrokeColor(args.vg,colors[i]);
+					nvgMoveTo(args.vg,xcor0,ycor0);
+					nvgLineTo(args.vg,xcor1,ycor1);
+					// nvgCircle(args.vg,xcor,ycor,3.0f);
+					//nvgFillColor(args.vg, nvgRGBA(0x00, 0xee, 0x00, 0xff));
+					// nvgFillColor(args.vg, colors[i]);
+					//nvgRect(args.vg,args.clipBox.pos.x,args.clipBox.pos.y,args.clipBox.size.x,args.clipBox.size.y);
+					//nvgFill(args.vg);
+					nvgStroke(args.vg);
+					nvgRotate(args.vg,0.0f);
+				}
+				
+			}
+			
+			nvgRestore(args.vg);
+		}
+        
+    }
 };
 
 struct MyKnob2 : app::SvgKnob {
