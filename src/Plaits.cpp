@@ -82,7 +82,7 @@ struct Plaits : Module {
 
 	float currentOutmix = 0.0f;
 	float currentPitch = 0.0f;
-	
+
 	Plaits() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(MODEL1_PARAM, 0.0, 1.0, 0.0, "Model selection 1");
@@ -269,6 +269,7 @@ struct Plaits : Module {
 			if (!freeTune)
 				pitch = std::round(params[FREQ_PARAM].getValue());
 			else pitch = params[FREQ_PARAM].getValue();
+			currentPitch = pitch;
 			// Calculate pitch for lowCpu mode if needed
 			if (lowCpu)
 				pitch += log2f(48000.f * args.sampleTime);
@@ -447,6 +448,7 @@ struct MyKnob1 : app::SvgKnob {
 		auto modul = dynamic_cast<Plaits*>(this->paramQuantity->module);
 		if (modul)
 		{
+			this->snap = !modul->freeTune;
 			if (modul->showModulations==false)
 				return;
 			static const NVGcolor colors[4]=
@@ -463,7 +465,6 @@ struct MyKnob1 : app::SvgKnob {
 				if (modulated>=0.0f)
 				{
 					float angle = rescale(modulated,0.0f,1.0f,this->minAngle,this->maxAngle)-1.5708;
-					//nvgRotate(args.vg,angle);
 					float xpos = args.clipBox.pos.x;
 					float ypos = args.clipBox.pos.y;
 					float w = args.clipBox.size.x;
@@ -476,11 +477,6 @@ struct MyKnob1 : app::SvgKnob {
 					nvgStrokeColor(args.vg,colors[i]);
 					nvgMoveTo(args.vg,xcor0,ycor0);
 					nvgLineTo(args.vg,xcor1,ycor1);
-					// nvgCircle(args.vg,xcor,ycor,3.0f);
-					//nvgFillColor(args.vg, nvgRGBA(0x00, 0xee, 0x00, 0xff));
-					// nvgFillColor(args.vg, colors[i]);
-					//nvgRect(args.vg,args.clipBox.pos.x,args.clipBox.pos.y,args.clipBox.size.x,args.clipBox.size.y);
-					//nvgFill(args.vg);
 					nvgStroke(args.vg);
 					nvgRotate(args.vg,0.0f);
 				}
@@ -515,53 +511,56 @@ struct MyButton1 : app::SvgSwitch {
 	}
 };
 
-template<typename RoganType>
-class MyRogan : public RoganType
+class NVGRestorer
 {
 public:
-	void draw(const typename RoganType::DrawArgs& args) override
-    {
-        RoganType::draw(args);
-        if (this->paramQuantity==nullptr)
-			return;
-		auto modul = dynamic_cast<Plaits*>(this->paramQuantity->module);
-		if (modul)
-		{
-			static const NVGcolor colors[4]=
-			{
-				nvgRGBA(0x00, 0xee, 0x00, 0xff),
-				nvgRGBA(0xee, 0x00, 0x00, 0xff),
-				nvgRGBA(0x00, 0x00, 0xee, 0xff),
-				nvgRGBA(0x00, 0xee, 0xee, 0xff),
-			};
-			nvgSave(args.vg);
-			for (int i=0;i<1;++i)
-			{
-				float modulated = modul->getModulatedParamNormalized(this->paramQuantity->paramId,i);
-				float angle = rescale(modulated,0.0f,1.0f,this->minAngle,this->maxAngle)-1.5708;
-				float xpos = args.clipBox.pos.x;
-				float ypos = args.clipBox.pos.y;
-				float w = args.clipBox.size.x;
-				float h = args.clipBox.size.y;
-				float xcor = xpos + (w/2.0f) + (w/2.0f) * std::cos(angle);
-				float ycor = ypos + (w/2.0f) + (w/2.0f) * std::sin(angle);
-				
-				nvgBeginPath(args.vg);
-				nvgCircle(args.vg,xcor,ycor,3.0f);
-				//nvgFillColor(args.vg, nvgRGBA(0x00, 0xee, 0x00, 0xff));
-				nvgFillColor(args.vg, colors[i]);
-				//nvgRect(args.vg,args.clipBox.pos.x,args.clipBox.pos.y,args.clipBox.size.x,args.clipBox.size.y);
-				nvgFill(args.vg);
-			}
-			
-			nvgRestore(args.vg);
-		}
-        
-    }
-
-		
+	NVGRestorer() = delete;
+	NVGRestorer(NVGcontext* ctx) : mCtx(ctx) 
+	{
+		if (mCtx) nvgSave(mCtx);
+	}
+	~NVGRestorer()
+	{
+		if (mCtx) nvgRestore(mCtx);
+	} 
 private:
+	NVGcontext* mCtx = nullptr;
+};
 
+struct Model_LEDWidget : public TransparentWidget
+{
+	Model_LEDWidget(Plaits* m)
+	{
+		mPlaits = m;
+	}
+	void draw(const DrawArgs& args) override
+	{
+		NVGRestorer nr(args.vg);
+		static const NVGcolor inactive = nvgRGBA(0x00,0x00,0x00,0xff);
+		static const NVGcolor active = nvgRGBA(0x84,0x84,0x84,0xff);
+		static const float positions[8][2]=
+		{
+			{96.5,102.5},
+			{103.5,	90.5},
+			{113.5,	81.5},
+			{127.5,	75.5},
+			{142.5,	75.5},
+			{156.5,	81.5},
+			{166.5,	90.5},
+			{173.5,	102.5}
+		};
+		for (int i=0;i<8;++i)
+		{
+			nvgBeginPath(args.vg);
+			int modelIndex = mPlaits->patch[0].engine % 8;
+			if (i == modelIndex)
+				nvgFillColor(args.vg,active);
+			else nvgFillColor(args.vg,inactive);
+			nvgEllipse(args.vg,positions[i][0],positions[i][1],3.5f,3.5f);
+			nvgFill(args.vg);
+		}
+	}
+	Plaits* mPlaits = nullptr;
 };
 
 struct PlaitsWidget : ModuleWidget {
@@ -588,8 +587,6 @@ struct PlaitsWidget : ModuleWidget {
 	}
 	PlaitsWidget(Plaits *module) {
 		setModule(module);
-		//setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Plaits2.svg")));
-		// 
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaitsBG.svg")));
 		for (int i=0;i<16;++i)
 			subPanels[i]=nullptr;
@@ -599,72 +596,7 @@ struct PlaitsWidget : ModuleWidget {
 		addChild(swgWidget);
 		swgWidget->box.pos = {0,0};
 		swgWidget->box.size = this->box.size;
-#ifdef OLD_PLAITS_PANEL
-		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-		addParam(createParam<TL1105>(mm2px(Vec(23.32685, 14.6539)), module, Plaits::MODEL1_PARAM));
-		addParam(createParam<TL1105>(mm2px(Vec(32.22764, 14.6539)), module, Plaits::MODEL2_PARAM));
-		
-		addParam(createParam<MyRogan<Rogan3PSWhite>>(mm2px(Vec(3.069, 17.984)), module, Plaits::FREQ_PARAM));
-		addParam(createParam<MyRogan<Rogan3PSWhite>>(mm2px(Vec(39.333, 17.984)), module, Plaits::HARMONICS_PARAM));
-		addParam(createParam<MyRogan<Rogan1PSWhite>>(mm2px(Vec(3.492, 42.673)), module, Plaits::TIMBRE_PARAM));
-		addParam(createParam<MyRogan<Rogan1PSWhite>>(mm2px(Vec(43.439, 42.673)), module, Plaits::MORPH_PARAM));
-		//addParam(createParam<Rogan1PSWhite>(mm2px(Vec(3.492, 42.673)), module, Plaits::TIMBRE_PARAM));
-		//addParam(createParam<Rogan1PSWhite>(mm2px(Vec(43.439, 42.673)), module, Plaits::MORPH_PARAM));
-		
-		addParam(createParam<Trimpot>(mm2px(Vec(7.782, 79.878)), module, Plaits::TIMBRE_CV_PARAM));
-		addParam(createParam<Trimpot>(mm2px(Vec(27.330, 83.374)), module, Plaits::FREQ_CV_PARAM));
-		addParam(createParam<Trimpot>(mm2px(Vec(46.515, 79.878)), module, Plaits::MORPH_CV_PARAM));
-		
-		addParam(createParam<Trimpot>(mm2px(Vec(2.0, 117.08103)), module, Plaits::HARMONICS_CV_PARAM));
-		addParam(createParam<Trimpot>(mm2px(Vec(8.5, 117.08103)), module, Plaits::HARMONICS_LPG_PARAM));
-		addParam(createParam<Trimpot>(mm2px(Vec(15.0, 117.08103)), module, Plaits::OUTMIX_PARAM));
-		addParam(createParam<Trimpot>(mm2px(Vec(21.5, 117.08103)), module, Plaits::OUTMIX_LPG_PARAM));
-		addParam(createParam<Trimpot>(mm2px(Vec(28.0, 117.08103)), module, Plaits::OUTMIX_CV_PARAM));
-
-		// 64, 100
-		addParam(createParam<Rogan0PSWhite>(mm2px(Vec(17.556, 73.012)), module, Plaits::LPG_COLOR_PARAM));
-		addInput(createInput<PJ301MPort>(mm2px(Vec(16.528, 80.286)), module, Plaits::LPG_COLOR_INPUT));
-		addParam(createParam<Rogan0PSWhite>(mm2px(Vec(36.923, 73.012)), module, Plaits::LPG_DECAY_PARAM));
-		addInput(createInput<PJ301MPort>(mm2px(Vec(35.894, 80.286)), module, Plaits::LPG_DECAY_INPUT));
-
-		addParam(createParam<Trimpot>(mm2px(Vec(15.778, 64.427)), module, Plaits::TIMBRE_LPG_PARAM));
-		addParam(createParam<Trimpot>(mm2px(Vec(27.330, 71.203)), module, Plaits::FREQ_LPG_PARAM));
-		addParam(createParam<Trimpot>(mm2px(Vec(39.131, 64.427)), module, Plaits::MORPH_LPG_PARAM));
-
-		addInput(createInput<PJ301MPort>(mm2px(Vec(3.31381, 92.48067)), module, Plaits::ENGINE_INPUT));
-		addInput(createInput<PJ301MPort>(mm2px(Vec(14.75983, 92.48067)), module, Plaits::TIMBRE_INPUT));
-		addInput(createInput<PJ301MPort>(mm2px(Vec(26.20655, 92.48067)), module, Plaits::FREQ_INPUT));
-		addInput(createInput<PJ301MPort>(mm2px(Vec(37.65257, 92.48067)), module, Plaits::MORPH_INPUT));
-		addInput(createInput<PJ301MPort>(mm2px(Vec(49.0986, 92.48067)), module, Plaits::HARMONICS_INPUT));
-		addInput(createInput<PJ301MPort>(mm2px(Vec(3.31381, 107.08103)), module, Plaits::TRIGGER_INPUT));
-		addInput(createInput<PJ301MPort>(mm2px(Vec(14.75983, 107.08103)), module, Plaits::LEVEL_INPUT));
-		addInput(createInput<PJ301MPort>(mm2px(Vec(26.20655, 107.08103)), module, Plaits::NOTE_INPUT));
-
-		addOutput(createOutput<PJ301MPort>(mm2px(Vec(37.65257, 107.08103)), module, Plaits::OUT_OUTPUT));
-		addOutput(createOutput<PJ301MPort>(mm2px(Vec(49.0986, 107.08103)), module, Plaits::AUX_OUTPUT));
-		
-		addInput(createInput<PJ301MPort>(mm2px(Vec(34.0, 117.08103)), module, Plaits::OUTMIX_INPUT));
-		addOutput(createOutput<PJ301MPort>(mm2px(Vec(42.0, 117.08103)), module, Plaits::AUX2_OUTPUT));
-		addOutput(createOutput<PJ301MPort>(mm2px(Vec(50.0, 117.08103)), module, Plaits::PITCH_SPREAD_OUTPUT));
-		
-
-		addParam(createParam<Trimpot>(mm2px(Vec(18.0, 6.0)), module, Plaits::UNISONOMODE_PARAM));
-		addParam(createParam<Trimpot>(mm2px(Vec(26.0, 6.0)), module, Plaits::UNISONOSPREAD_PARAM));
-		addInput(createInput<PJ301MPort>(mm2px(Vec(34.0, 6.0)), module, Plaits::SPREAD_INPUT));
-
-		addChild(createLight<MediumLight<GreenRedLight>>(mm2px(Vec(28.79498, 23.31649)), module, Plaits::MODEL_LIGHT + 0 * 2));
-		addChild(createLight<MediumLight<GreenRedLight>>(mm2px(Vec(28.79498, 28.71704)), module, Plaits::MODEL_LIGHT + 1 * 2));
-		addChild(createLight<MediumLight<GreenRedLight>>(mm2px(Vec(28.79498, 34.1162)), module, Plaits::MODEL_LIGHT + 2 * 2));
-		addChild(createLight<MediumLight<GreenRedLight>>(mm2px(Vec(28.79498, 39.51675)), module, Plaits::MODEL_LIGHT + 3 * 2));
-		addChild(createLight<MediumLight<GreenRedLight>>(mm2px(Vec(28.79498, 44.91731)), module, Plaits::MODEL_LIGHT + 4 * 2));
-		addChild(createLight<MediumLight<GreenRedLight>>(mm2px(Vec(28.79498, 50.31785)), module, Plaits::MODEL_LIGHT + 5 * 2));
-		addChild(createLight<MediumLight<GreenRedLight>>(mm2px(Vec(28.79498, 55.71771)), module, Plaits::MODEL_LIGHT + 6 * 2));
-		addChild(createLight<MediumLight<GreenRedLight>>(mm2px(Vec(28.79498, 61.11827)), module, Plaits::MODEL_LIGHT + 7 * 2));
-#else
 		addParam(createParamCentered<MyKnob1>(Vec(71, 235.5), module, Plaits::FREQ_PARAM));
 		addParam(createParamCentered<MyKnob1>(Vec(199,235.5), module, Plaits::SECONDARY_FREQ_PARAM));
 		addParam(createParamCentered<MyKnob1>(Vec(135,198.5), module, Plaits::HARMONICS_PARAM));
@@ -721,7 +653,11 @@ struct PlaitsWidget : ModuleWidget {
 
 		addParam(createParamCentered<MyKnob2>(Vec(252,76), module, Plaits::UNISONOSPREAD_CV_PARAM));
 		addInput(createInputCentered<MyPort1>(Vec(252,98), module, Plaits::SPREAD_INPUT));
-#endif
+
+		Model_LEDWidget* ledwid = new Model_LEDWidget(module);
+		ledwid->box.pos = {0,0};
+		ledwid->box.size = box.size;
+		addChild(ledwid);
 	}
 
 	void appendContextMenu(Menu *menu) override {
