@@ -76,12 +76,13 @@ struct Plaits : Module {
 	dsp::DoubleRingBuffer<dsp::Frame<2>, 256> outputBuffer[MAX_PLAITS_VOICES];
 	bool lowCpu = false;
 	bool freeTune = false;
-
+	bool showModulations = true;
 	dsp::SchmittTrigger model1Trigger;
 	dsp::SchmittTrigger model2Trigger;
 
 	float currentOutmix = 0.0f;
-
+	float currentPitch = 0.0f;
+	
 	Plaits() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(MODEL1_PARAM, 0.0, 1.0, 0.0, "Model selection 1");
@@ -141,7 +142,8 @@ struct Plaits : Module {
 		json_object_set_new(rootJ, "model", json_integer(patch[0].engine));
 		json_object_set_new(rootJ, "lpgColor", json_real(patch[0].lpg_colour));
 		json_object_set_new(rootJ, "decay", json_real(patch[0].decay));
-
+		json_object_set_new(rootJ, "freetune", json_boolean(freeTune));
+		json_object_set_new(rootJ, "showmods", json_boolean(showModulations));
 		return rootJ;
 	}
 
@@ -149,6 +151,14 @@ struct Plaits : Module {
 		json_t *lowCpuJ = json_object_get(rootJ, "lowCpu");
 		if (lowCpuJ)
 			lowCpu = json_boolean_value(lowCpuJ);
+
+		json_t *freetuneJ = json_object_get(rootJ, "freetune");
+		if (freetuneJ)
+			freeTune = json_boolean_value(freetuneJ);
+
+		json_t *showmodJ = json_object_get(rootJ, "showmods");
+		if (showmodJ)
+			showModulations = json_boolean_value(showmodJ);
 
 		json_t *modelJ = json_object_get(rootJ, "model");
 		if (modelJ)
@@ -437,6 +447,8 @@ struct MyKnob1 : app::SvgKnob {
 		auto modul = dynamic_cast<Plaits*>(this->paramQuantity->module);
 		if (modul)
 		{
+			if (modul->showModulations==false)
+				return;
 			static const NVGcolor colors[4]=
 			{
 				nvgRGBA(0x00, 0xee, 0x00, 0xff),
@@ -722,13 +734,19 @@ struct PlaitsWidget : ModuleWidget {
 			}
 		};
 
+		struct PlaitsShowModulationsItem : MenuItem {
+			Plaits *module;
+			void onAction(const event::Action &e) override {
+				module->showModulations ^= true;
+			}
+		};
+		
 		struct PlaitsFreeTuneItem : MenuItem {
 			Plaits *module;
 			void onAction(const event::Action &e) override {
 				module->freeTune ^= true;
 			}
 		};
-		
 
 		struct PlaitsModelItem : MenuItem {
 			Plaits *module;
@@ -746,6 +764,11 @@ struct PlaitsWidget : ModuleWidget {
 		PlaitsFreeTuneItem *freeTuneItem = createMenuItem<PlaitsFreeTuneItem>("Octave knob free tune", CHECKMARK(module->freeTune));
 		freeTuneItem->module = module;
 		menu->addChild(freeTuneItem);
+
+		PlaitsShowModulationsItem *showModsItem 
+			= createMenuItem<PlaitsShowModulationsItem>("Show modulation amounts on knobs", CHECKMARK(module->showModulations));
+		showModsItem->module = module;
+		menu->addChild(showModsItem);
 
 		menu->addChild(new MenuEntry());
 		menu->addChild(createMenuLabel("Models"));
