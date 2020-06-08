@@ -9,6 +9,22 @@
 
 #define MAX_PLAITS_VOICES 16
 
+class NVGRestorer
+{
+public:
+	NVGRestorer() = delete;
+	NVGRestorer(NVGcontext* ctx) : mCtx(ctx) 
+	{
+		if (mCtx) nvgSave(mCtx);
+	}
+	~NVGRestorer()
+	{
+		if (mCtx) nvgRestore(mCtx);
+	} 
+private:
+	NVGcontext* mCtx = nullptr;
+};
+
 struct Plaits : Module {
 	enum ParamIds {
 		MODEL1_PARAM,
@@ -427,13 +443,6 @@ static const std::string modelLabels[16] = {
 	"Analog hi-hat",
 };
 
-
-struct Rogan0PSWhite : Rogan {
-	Rogan0PSWhite() {
-		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Rogan0PSWhite.svg")));
-	}
-};
-
 struct MyKnob1 : app::SvgKnob {
 	MyKnob1() {
 		minAngle = -0.78 * M_PI;
@@ -448,7 +457,8 @@ struct MyKnob1 : app::SvgKnob {
 		auto modul = dynamic_cast<Plaits*>(this->paramQuantity->module);
 		if (modul)
 		{
-			this->snap = !modul->freeTune;
+			if (paramQuantity->paramId == Plaits::FREQ_PARAM)
+				this->snap = !modul->freeTune;
 			if (modul->showModulations==false)
 				return;
 			static const NVGcolor colors[4]=
@@ -458,7 +468,7 @@ struct MyKnob1 : app::SvgKnob {
 				nvgRGBA(0x00, 0x00, 0xee, 0xff),
 				nvgRGBA(0x00, 0xee, 0xee, 0xff),
 			};
-			nvgSave(args.vg);
+			NVGRestorer rs(args.vg);
 			for (int i=0;i<1;++i)
 			{
 				float modulated = modul->getModulatedParamNormalized(this->paramQuantity->paramId,i);
@@ -482,8 +492,6 @@ struct MyKnob1 : app::SvgKnob {
 				}
 				
 			}
-			
-			nvgRestore(args.vg);
 		}
         
     }
@@ -509,22 +517,6 @@ struct MyButton1 : app::SvgSwitch {
 		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance,"res/plaits/newtable_push.svg")));
 		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance,"res/plaits/newtable_pushed.svg")));
 	}
-};
-
-class NVGRestorer
-{
-public:
-	NVGRestorer() = delete;
-	NVGRestorer(NVGcontext* ctx) : mCtx(ctx) 
-	{
-		if (mCtx) nvgSave(mCtx);
-	}
-	~NVGRestorer()
-	{
-		if (mCtx) nvgRestore(mCtx);
-	} 
-private:
-	NVGcontext* mCtx = nullptr;
 };
 
 struct Model_LEDWidget : public TransparentWidget
