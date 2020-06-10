@@ -527,6 +527,8 @@ struct Model_LEDWidget : public TransparentWidget
 	}
 	void draw(const DrawArgs& args) override
 	{
+		if (mPlaits==nullptr)
+			return;
 		NVGRestorer nr(args.vg);
 		static const NVGcolor inactive = nvgRGBA(0x00,0x00,0x00,0xff);
 		static const NVGcolor active = nvgRGBA(0x84,0x84,0x84,0xff);
