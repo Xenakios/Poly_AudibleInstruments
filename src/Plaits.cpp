@@ -598,6 +598,7 @@ struct PlaitsWidget : ModuleWidget {
 		for (int i=0;i<16;++i)
 			subPanels[i]=nullptr;
 		subPanels[0] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits01.svg"));
+		subPanels[1] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits02.svg"));
 		swgWidget = new SvgWidget;
 		swgWidget->setSvg(subPanels[0]);
 		addChild(swgWidget);
