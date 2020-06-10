@@ -452,8 +452,7 @@ struct MyKnob1 : app::SvgKnob {
 	void draw(const DrawArgs& args) override
     {
         app::SvgKnob::draw(args);
-        return;
-		if (this->paramQuantity==nullptr)
+        if (this->paramQuantity==nullptr)
 			return;
 		auto modul = dynamic_cast<Plaits*>(this->paramQuantity->module);
 		if (modul)
