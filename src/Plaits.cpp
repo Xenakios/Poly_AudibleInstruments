@@ -452,7 +452,8 @@ struct MyKnob1 : app::SvgKnob {
 	void draw(const DrawArgs& args) override
     {
         app::SvgKnob::draw(args);
-        if (this->paramQuantity==nullptr)
+        return;
+		if (this->paramQuantity==nullptr)
 			return;
 		auto modul = dynamic_cast<Plaits*>(this->paramQuantity->module);
 		if (modul)
@@ -593,14 +594,15 @@ struct PlaitsWidget : ModuleWidget {
 				}
 			}
 		}
+		
 	}
 	PlaitsWidget(Plaits *module) {
 		setModule(module);
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaitsBG.svg")));
-		for (int i=0;i<16;++i)
-			subPanels[i]=nullptr;
+		subPanels.resize(16);
 		subPanels[0] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits01.svg"));
 		subPanels[1] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits02.svg"));
+		
 		swgWidget = new SvgWidget;
 		swgWidget->setSvg(subPanels[0]);
 		addChild(swgWidget);
@@ -664,10 +666,14 @@ struct PlaitsWidget : ModuleWidget {
 		addParam(createParamCentered<MyKnob2>(Vec(252,76), module, Plaits::UNISONOSPREAD_CV_PARAM));
 		addInput(createInputCentered<MyPort1>(Vec(252,98), module, Plaits::SPREAD_INPUT));
 
+		
 		Model_LEDWidget* ledwid = new Model_LEDWidget(module);
 		ledwid->box.pos = {0,0};
 		ledwid->box.size = box.size;
 		addChild(ledwid);
+		
+
+		
 	}
 
 	void appendContextMenu(Menu *menu) override {
@@ -726,7 +732,7 @@ struct PlaitsWidget : ModuleWidget {
 		}
 	}
 	
-	std::shared_ptr<SVG> subPanels[16];
+	std::vector<std::shared_ptr<SVG>> subPanels;
 	int curSubPanel = 0;
 	SvgWidget* swgWidget = nullptr;
 };
