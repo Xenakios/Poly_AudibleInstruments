@@ -601,7 +601,13 @@ struct PlaitsWidget : ModuleWidget {
 		subPanels.resize(16);
 		subPanels[0] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits01.svg"));
 		subPanels[1] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits02.svg"));
-		
+		subPanels[2] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits03.svg"));
+		subPanels[3] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits04.svg"));
+		subPanels[4] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits05.svg"));
+		subPanels[5] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits06.svg"));
+		subPanels[6] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits07.svg"));
+		subPanels[7] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits08.svg"));
+
 		swgWidget = new SvgWidget;
 		swgWidget->setSvg(subPanels[0]);
 		addChild(swgWidget);
