@@ -1,3 +1,5 @@
+Note, June 12th 2020 : You probably shouldn't build binaries from the current git repo master branch. I made a mistake and didn't put various experimental, in-work, things into a new git branch. Nobody will probably ever read this, but oh well...I will very likely revert this git master branch to an earlier state very soon.
+
 # Poly_AudibleInstruments
 
 Plugin for VCV Rack.
