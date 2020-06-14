@@ -599,15 +599,12 @@ struct PlaitsWidget : ModuleWidget {
 		setModule(module);
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaitsBG.svg")));
 		subPanels.resize(16);
-		subPanels[0] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits01.svg"));
-		subPanels[1] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits02.svg"));
-		subPanels[2] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits03.svg"));
-		subPanels[3] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits04.svg"));
-		subPanels[4] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits05.svg"));
-		subPanels[5] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits06.svg"));
-		subPanels[6] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits07.svg"));
-		subPanels[7] = APP->window->loadSvg(asset::plugin(pluginInstance, "res/plaits/newtable_plaits08.svg"));
-
+		char resName[128];
+		for (int i=0;i<16;++i)
+		{
+			sprintf(resName,"res/plaits/newtable_plaits%02d.svg",i+1);
+			subPanels[i] = APP->window->loadSvg(asset::plugin(pluginInstance, resName));	
+		}
 		swgWidget = new SvgWidget;
 		swgWidget->setSvg(subPanels[0]);
 		addChild(swgWidget);
