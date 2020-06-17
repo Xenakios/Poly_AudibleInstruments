@@ -447,7 +447,7 @@ struct MyKnob1 : app::SvgKnob {
 	MyKnob1() {
 		minAngle = -0.78 * M_PI;
 		maxAngle = 0.78 * M_PI;
-		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/palette/newtable_knobL.svg")));
+		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/palette/palette_knobL.svg")));
 	}
 	void draw(const DrawArgs& args) override
     {
@@ -501,21 +501,21 @@ struct MyKnob2 : app::SvgKnob {
 	MyKnob2() {
 		minAngle = -0.83 * M_PI;
 		maxAngle = 0.83 * M_PI;
-		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/palette/newtable_knobS.svg")));
+		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/palette/palette_knobS.svg")));
 	}
 };
 
 struct MyPort1 : app::SvgPort {
 	MyPort1() {
-		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance,"res/palette/newtable_jack.svg")));
+		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance,"res/palette/palette_jack.svg")));
 	}
 };
 
 struct MyButton1 : app::SvgSwitch {
 	MyButton1() {
 		momentary = true;
-		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance,"res/palette/newtable_push.svg")));
-		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance,"res/palette/newtable_pushed.svg")));
+		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance,"res/palette/palette_push.svg")));
+		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance,"res/palette/palette_pushed.svg")));
 	}
 };
 
@@ -597,12 +597,12 @@ struct PlaitsWidget : ModuleWidget {
 	}
 	PlaitsWidget(Plaits *module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/palette/newtable_plaitsBG.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/palette/paletteBG.svg")));
 		subPanels.resize(16);
 		char resName[128];
 		for (int i=0;i<16;++i)
 		{
-			sprintf(resName,"res/palette/newtable_plaits%02d.svg",i+1);
+			sprintf(resName,"res/palette/palette_%d.svg",i+1);
 			subPanels[i] = APP->window->loadSvg(asset::plugin(pluginInstance, resName));	
 		}
 		swgWidget = new SvgWidget;
