@@ -522,6 +522,7 @@ struct MyButton1 : app::SvgSwitch {
 		momentary = true;
 		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance,"res/palette/palette_push.svg")));
 		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance,"res/palette/palette_pushed.svg")));
+		
 	}
 };
 
@@ -538,14 +539,26 @@ struct Model_LEDWidget : public TransparentWidget
 		NVGRestorer nr(args.vg);
 		static const NVGcolor inactive = nvgRGBA(0x00,0x00,0x00,0xff);
 		static const NVGcolor active = nvgRGBA(0x84,0x84,0x84,0xff);
+		static const NVGcolor activeModulated = nvgRGBA(0x50,0x50,0x50,0xff);
+		int baseEngineIndex = mPlaits->patch[0].engine;
+		int numVoices = mPlaits->curNumVoices;
 		for (int i=0;i<8;++i)
 		{
 			nvgBeginPath(args.vg);
-			int modelIndex = mPlaits->patch[0].engine % 8;
-			if (i == modelIndex)
+			// int modelIndex = mPlaits->patch[0].engine % 8;	
+			// int modelIndex = mPlaits->voice[0].active_engine() % 8;	
+			if ((baseEngineIndex % 8) == i)
 				nvgFillColor(args.vg,active);
 			else nvgFillColor(args.vg,inactive);
 			nvgEllipse(args.vg,positions[i][0],positions[i][1],3.5f,3.5f);
+			nvgFill(args.vg);
+		}
+		for (int i=0;i<numVoices;++i)
+		{
+			nvgBeginPath(args.vg);
+			nvgFillColor(args.vg,activeModulated);
+			int modelIndex = mPlaits->voice[i].active_engine() % 8;	
+			nvgEllipse(args.vg,positions[modelIndex][0],positions[modelIndex][1],1.5f,1.5f);
 			nvgFill(args.vg);
 		}
 	}
