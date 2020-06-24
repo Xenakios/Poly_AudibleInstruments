@@ -99,6 +99,8 @@ struct Plaits : Module {
 	float currentOutmix = 0.0f;
 	float currentPitch = 0.0f;
 
+	int curNumVoices = 0;
+
 	Plaits() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(MODEL1_PARAM, 0.0, 1.0, 0.0, "Model selection 1");
@@ -193,15 +195,18 @@ struct Plaits : Module {
 	}
 	float getModulatedParamNormalized(int paramid, int whichvoice=0)
 	{
-		if (paramid==FREQ_PARAM)
-			return rescale(voice[whichvoice].epars.note,12.0f,108.0f,0.0f,1.0f);
-		if (paramid==HARMONICS_PARAM)
-			return voice[whichvoice].epars.harmonics;
-		if (paramid==MORPH_PARAM)
-			return voice[whichvoice].epars.morph;
-		if (paramid==TIMBRE_PARAM)
-			return voice[whichvoice].epars.timbre;
-		if (paramid==OUTMIX_PARAM)
+		if (whichvoice<curNumVoices)
+		{
+			if (paramid==FREQ_PARAM)
+				return rescale(voice[whichvoice].epars.note,12.0f,108.0f,0.0f,1.0f);
+			if (paramid==HARMONICS_PARAM)
+				return voice[whichvoice].epars.harmonics;
+			if (paramid==MORPH_PARAM)
+				return voice[whichvoice].epars.morph;
+			if (paramid==TIMBRE_PARAM)
+				return voice[whichvoice].epars.timbre;
+		}
+		if (paramid==OUTMIX_PARAM && whichvoice == 0)
 			return currentOutmix;
 		return -1.0f;
 	}
@@ -243,6 +248,7 @@ struct Plaits : Module {
 		int unispreadchans = params[UNISONOMODE_PARAM].getValue();
 		if (unispreadchans>=2)
 			numpolychs = unispreadchans;
+		curNumVoices = numpolychs;
 		if (outputBuffer[0].empty()) {
 			const int blockSize = 12;
 			float pitchAdjust = params[SECONDARY_FREQ_PARAM].getValue();
@@ -469,7 +475,7 @@ struct MyKnob1 : app::SvgKnob {
 				nvgRGBA(0x00, 0xee, 0xee, 0xff),
 			};
 			NVGRestorer rs(args.vg);
-			for (int i=0;i<1;++i)
+			for (int i=0;i<16;++i)
 			{
 				float modulated = modul->getModulatedParamNormalized(this->paramQuantity->paramId,i);
 				if (modulated>=0.0f)
@@ -484,7 +490,7 @@ struct MyKnob1 : app::SvgKnob {
 					float xcor1 = xpos + (w / 2.0f) + 15.0f * std::cos(angle);
 					float ycor1 = ypos + (w / 2.0f) + 15.0f * std::sin(angle);
 					nvgBeginPath(args.vg);
-					nvgStrokeColor(args.vg,colors[i]);
+					nvgStrokeColor(args.vg,colors[0]);
 					nvgMoveTo(args.vg,xcor0,ycor0);
 					nvgLineTo(args.vg,xcor1,ycor1);
 					nvgStroke(args.vg);
@@ -532,7 +538,6 @@ struct Model_LEDWidget : public TransparentWidget
 		NVGRestorer nr(args.vg);
 		static const NVGcolor inactive = nvgRGBA(0x00,0x00,0x00,0xff);
 		static const NVGcolor active = nvgRGBA(0x84,0x84,0x84,0xff);
-		
 		for (int i=0;i<8;++i)
 		{
 			nvgBeginPath(args.vg);
