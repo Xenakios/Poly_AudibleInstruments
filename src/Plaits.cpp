@@ -541,6 +541,7 @@ struct Model_LEDWidget : public TransparentWidget
 		static const NVGcolor active = nvgRGBA(0x84,0x84,0x84,0xff);
 		static const NVGcolor activeModulated = nvgRGBA(0x50,0x50,0x50,0xff);
 		int baseEngineIndex = mPlaits->patch[0].engine;
+		int baseEngineBank = baseEngineIndex / 8;
 		int numVoices = mPlaits->curNumVoices;
 		for (int i=0;i<8;++i)
 		{
@@ -557,8 +558,17 @@ struct Model_LEDWidget : public TransparentWidget
 		{
 			nvgBeginPath(args.vg);
 			nvgFillColor(args.vg,activeModulated);
-			int modelIndex = mPlaits->voice[i].active_engine() % 8;	
-			nvgEllipse(args.vg,positions[modelIndex][0],positions[modelIndex][1],1.5f,1.5f);
+			int modelIndex = mPlaits->voice[i].active_engine();
+			int bank = modelIndex / 8;
+			modelIndex = modelIndex % 8;
+			if (bank == baseEngineBank) 
+			{
+				nvgEllipse(args.vg,positions[modelIndex][0],positions[modelIndex][1],1.5f,1.5f);
+				
+			} else
+			{
+				nvgRect(args.vg,positions[modelIndex][0]-1.5f,positions[modelIndex][1]-1.5f,3.0f,3.0f);
+			}
 			nvgFill(args.vg);
 		}
 	}
