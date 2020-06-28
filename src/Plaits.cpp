@@ -546,8 +546,6 @@ struct Model_LEDWidget : public TransparentWidget
 		for (int i=0;i<8;++i)
 		{
 			nvgBeginPath(args.vg);
-			// int modelIndex = mPlaits->patch[0].engine % 8;	
-			// int modelIndex = mPlaits->voice[0].active_engine() % 8;	
 			if ((baseEngineIndex % 8) == i)
 				nvgFillColor(args.vg,active);
 			else nvgFillColor(args.vg,inactive);
@@ -636,9 +634,8 @@ struct PlaitsWidget : ModuleWidget {
 		swgWidget = new SvgWidget;
 		swgWidget->setSvg(subPanels[0]);
 		addChild(swgWidget);
-		swgWidget->box.pos = {0,0};
-		swgWidget->box.size = this->box.size;
-
+		swgWidget->box = {{0,0},{box.size}};
+		
 		addParam(createParamCentered<MyKnob1>(Vec(71, 235.5), module, Plaits::FREQ_PARAM));
 		addParam(createParamCentered<MyKnob1>(Vec(199,235.5), module, Plaits::SECONDARY_FREQ_PARAM));
 		addParam(createParamCentered<MyKnob1>(Vec(135,198.5), module, Plaits::HARMONICS_PARAM));
@@ -696,14 +693,9 @@ struct PlaitsWidget : ModuleWidget {
 		addParam(createParamCentered<MyKnob2>(Vec(252,76), module, Plaits::UNISONOSPREAD_CV_PARAM));
 		addInput(createInputCentered<MyPort1>(Vec(252,98), module, Plaits::SPREAD_INPUT));
 
-		
 		Model_LEDWidget* ledwid = new Model_LEDWidget(module);
-		ledwid->box.pos = {0,0};
-		ledwid->box.size = box.size;
+		ledwid->box = {{0,0},{box.size}};
 		addChild(ledwid);
-		
-
-		
 	}
 
 	void appendContextMenu(Menu *menu) override {
