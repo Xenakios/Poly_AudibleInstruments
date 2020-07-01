@@ -1,18 +1,15 @@
-CC := clang
-CXX := clang++
-
 # If RACK_DIR is not defined when calling the Makefile, default to two directories above
 RACK_DIR ?= ../Rack-SDK
 
 # FLAGS will be passed to both the C and C++ compiler
 FLAGS += -I./eurorack 
 FLAGS += -DTEST
-# CFLAGS += -fsanitize=undefined
-# CXXFLAGS += -fsanitize=undefined
+CFLAGS +=
+CXXFLAGS +=
 
 # Careful about linking to shared libraries, since you can't assume much about the user's environment and library search path.
 # Static libraries are fine, but they should be added to this plugin's build system.
-# LDFLAGS += -fuse-ld=lld
+LDFLAGS +=
 
 # Add .cpp files to the build
 SOURCES += $(wildcard src/*.cpp)
@@ -39,15 +36,6 @@ SOURCES += eurorack/marbles/random/lag_processor.cc
 SOURCES += eurorack/marbles/random/quantizer.cc
 SOURCES += eurorack/marbles/ramp/ramp_extractor.cc
 SOURCES += eurorack/marbles/resources.cc
-
-SOURCES += eurorack/clouds/dsp/correlator.cc
-SOURCES += eurorack/clouds/dsp/granular_processor.cc
-SOURCES += eurorack/clouds/dsp/mu_law.cc
-SOURCES += eurorack/clouds/dsp/pvoc/frame_transformation.cc
-SOURCES += eurorack/clouds/dsp/pvoc/phase_vocoder.cc
-SOURCES += eurorack/clouds/dsp/pvoc/stft.cc
-SOURCES += eurorack/clouds/resources.cc
-# SOURCES += eurorack/clouds/dsp/pvoc/spectral_clouds_transformation.cc
 
 # Add files to the ZIP package when running `make dist`
 # The compiled plugin and "plugin.json" are automatically added.

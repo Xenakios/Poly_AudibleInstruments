@@ -7,5 +7,4 @@ void init(Plugin *p) {
 	p->addModel(modelPlaits);
 	p->addModel(modelBraids);
 	p->addModel(modelMarbles);
-	p->addModel(modelClouds);
 }
