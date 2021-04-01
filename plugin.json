@@ -1,7 +1,7 @@
 {
   "slug": "PolyAudibleInstruments",
   "name": "Xenakios",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "license": "GPL-3.0-only",
   "brand": "Xenakios",
   "author": "Xenakios",
@@ -13,16 +13,6 @@
   "donateUrl": "",
   "modules": [
     
-    {
-      "slug": "PolyPlaits",
-      "name": "Macro PolyOscillator 2",
-      "description": "Based on Mutable Instruments Plaits",
-      "tags": [
-        "Oscillator",
-        "Hardware",
-        "Polyphonic"
-      ]
-    },
     {
       "slug": "PolyBraids",
       "name": "Macro PolyOscillator 1",
