@@ -1,3 +1,6 @@
+19th November 2021 : This repository is now deprecated. 
+No further updates (for example for Rack 2 compatibility) or binary releases will be made.
+
 # Poly_AudibleInstruments
 
 Plugin for VCV Rack.
